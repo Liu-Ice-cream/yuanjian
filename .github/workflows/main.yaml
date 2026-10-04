@@ -1,10 +1,11 @@
-name: linkding CI
+name: Yuanjian CI
 
 on:
   pull_request:
   push:
     branches:
-      - master
+      - main
+      - product-main
 
 jobs:
   unit_tests:
@@ -30,7 +31,10 @@ jobs:
           uv sync
           mkdir data
       - name: Run tests
-        run: uv run pytest -n auto
+        run: |
+          uv run manage.py check
+          uv run manage.py makemigrations --check --dry-run
+          uv run pytest bookmarks/tests research/tests -n auto
   e2e_tests:
     name: E2E Tests
     runs-on: ubuntu-latest

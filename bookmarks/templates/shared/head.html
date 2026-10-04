@@ -1,35 +1,34 @@
-{% load static %}
+{% load static research_tags %}
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" href="{% static 'favicon.ico' %}" sizes="48x48">
   <link rel="icon"
-        href="{% static 'favicon.svg' %}"
+        href="{% static 'yuanjian.svg' %}"
         sizes="any"
         type="image/svg+xml">
   <link rel="apple-touch-icon"
         sizes="180x180"
-        href="{% static 'apple-touch-icon.png' %}">
+        href="{% static 'yuanjian.svg' %}">
   <link rel="mask-icon"
-        href="{% static 'safari-pinned-tab.svg' %}"
-        color="#5856e0">
+        href="{% static 'yuanjian.svg' %}"
+        color="#0f766e">
   <link rel="manifest" href="{% url 'linkding:manifest' %}">
   <link rel="search"
         type="application/opensearchdescription+xml"
-        title="Linkding"
+        title="{{ product_name }}"
         href="{% url 'linkding:opensearch' %}" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0, minimal-ui">
-  <meta name="description" content="Self-hosted bookmark service">
+  <meta name="description" content="{{ product_description }}">
   <meta name="robots" content="index,follow">
   <meta name="author" content="Sascha Ißbrücker">
-  <title>{{ page_title|default:'Linkding' }}</title>
+  <title>{{ page_title|default:product_name|product_title }}</title>
   {# Include specific theme variant based on user profile setting #}
   {% if request.user_profile.theme == 'light' %}
     <link href="{% static 'theme-light.css' %}?v={{ app_version }}"
           rel="stylesheet"
           type="text/css" />
-    <meta name="theme-color" content="#5856e0">
+    <meta name="theme-color" content="#0f766e">
   {% elif request.user_profile.theme == 'dark' %}
     <link href="{% static 'theme-dark.css' %}?v={{ app_version }}"
           rel="stylesheet"
@@ -50,8 +49,9 @@
           content="#161822">
     <meta name="theme-color"
           media="(prefers-color-scheme: light)"
-          content="#5856e0">
+          content="#0f766e">
   {% endif %}
+  <link href="{% static 'research.css' %}?v={{ product_version }}" rel="stylesheet">
   {% if request.user_profile.custom_css %}
     <link href="{% url 'linkding:custom_css' %}?hash={{ request.user_profile.custom_css_hash }}"
           rel="stylesheet"

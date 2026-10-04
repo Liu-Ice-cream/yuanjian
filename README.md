@@ -1,132 +1,57 @@
-<div align="center">
-    <br>
-    <a href="https://github.com/sissbruecker/linkding">
-        <img src="assets/header.svg" height="50">
-    </a>
-    <br>
-</div>
+# 源笺 · 个人研究资料工作台
 
-##  Introduction
+**帮助研究者把收藏的资料转化成可复用的研究材料。**
 
-linkding is a bookmark manager that you can host yourself.
-It's designed be to be minimal, fast, and easy to set up using Docker.
+源笺 v0.1.0 基于 [linkding](https://github.com/sissbruecker/linkding) v1.47.0 开发。当前是本地可运行的第一版，面向个人、自托管研究资料整理。
 
-The name comes from:
-- *link* which is often used as a synonym for URLs and bookmarks in common language
-- *Ding* which is German for thing
-- ...so basically something for managing your links
+## 第一版能做什么
 
-**Feature Overview:**
-- Clean UI optimized for readability
-- Organize bookmarks with tags
-- Bulk editing, Markdown notes, read it later functionality
-- Share bookmarks with other users or guests
-- Automatically provides titles, descriptions and icons of bookmarked websites
-- Automatically archive websites, either as local HTML file or on Internet Archive
-- Import and export bookmarks in Netscape HTML format
-- Installable as a Progressive Web App (PWA)
-- Extensions for [Firefox](https://addons.mozilla.org/firefox/addon/linkding-extension/) and [Chrome](https://chrome.google.com/webstore/detail/linkding-extension/beakmhbijpdhipnjhnclmhgjlddhidpe), as well as a bookmarklet
-- SSO support via OIDC or authentication proxies
-- REST API for developing 3rd party apps
-- Admin panel for user self-service and raw data access
+- 收集论文、代码仓库、数据集、技术文章和其他网页资料，保留原始来源。
+- 创建研究课题，把不同类型的资料归入同一研究目标。
+- 管理待阅读、阅读中、已阅读和已复用四个阶段。
+- 填写结构化研究卡片：研究问题、核心结论、证据与实验、局限与注意事项、与课题的关系。
+- 搜索标题、标签、原笔记及研究卡片内容，并组合课题、类型、阶段筛选。
+- 将当前筛选结果完整导出为 Markdown，包含研究记录与来源链接，可继续用于汇报、写作和笔记。
 
+旧收藏直接出现在研究资料列表，可逐步整理；原有收藏库、附件、标签、HTML 导入导出与 API 继续保留。研究卡片及课题按账号隔离，旧收藏的公开分享不会开放研究记录。
 
-**Demo:** https://demo.linkding.link/
+## Windows 本地运行
 
-**Screenshot:**
+需要 Python 3.13+、Node.js 和 npm；本机已验证 Python 3.14.5、Node.js 24。首次安装在 PowerShell 执行：
 
-![Screenshot](/docs/public/linkding-screenshot.png?raw=true "Screenshot")
-
-## Getting Started
-
-The following links help you to get started with linkding:
-- [Install linkding on your own server](https://linkding.link/installation) or [check managed hosting options](https://linkding.link/managed-hosting)
-- [Install the browser extension](https://linkding.link/browser-extension)
-- [Check out community projects](https://linkding.link/community), which include mobile apps, browser extensions, libraries and more
-
-## Documentation
-
-The full documentation is now available at [linkding.link](https://linkding.link/).
-
-If you want to contribute to the documentation, you can find the source files in the `docs` folder.
-
-If you want to contribute a community project, feel free to [submit a PR](https://github.com/sissbruecker/linkding/edit/master/docs/src/content/docs/community.md).
-
-## Contributing
-
-Small improvements, bugfixes and documentation improvements are always welcome. If you want to contribute a larger feature, consider opening an issue first to discuss it. I may choose to ignore PRs for features that don't align with the project's goals or that I don't want to maintain.
-
-## Development
-
-The application is built using the Django web framework. You can get started by checking out the excellent [Django docs](https://docs.djangoproject.com/en/4.1/). The `bookmarks` folder contains the actual bookmark application. Other than that the code should be self-explanatory / standard Django stuff 🙂.
-
-### Prerequisites
-- Python 3.13
-- [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- Node.js
-
-### Setup
-
-Initialize the development environment with:
-```
-make init
-```
-This sets up a virtual environment using uv, installs NPM dependencies and runs migrations to create the initial database.
-
-Create a user for the frontend:
-```
-uv run manage.py createsuperuser --username=joe --email=joe@example.com
+```powershell
+.\scripts\setup-local.ps1
+.\start-local.cmd
 ```
 
-Run the frontend build for bundling frontend components with:
-```
-make frontend
+访问 <http://127.0.0.1:9090/research/>。管理员用户名为 `localadmin`，随机密码保存在本机 `data/local-access.json`。初始化脚本不会重置已有账号密码。
+
+以后双击 `start-local.cmd` 启动，双击 `stop-local.cmd` 停止，资料仍保存在 `data/`。新版本增加迁移时先停止服务、备份整个 `data/`，再运行 setup 脚本完成升级。
+
+Docker Compose 配置已改为从本仓库构建 `yuanjian:local`，并包含新增 research 模块；本机首版验证使用 Windows 启动器，尚未验证容器构建。`docker compose up --build` 前需按 `.env.sample` 准备 `.env`。
+
+运行目录、日志、数据库及排障见 [本地运行说明](https://github.com/Liu-Ice-cream/yuanjian/blob/main/docs/installation.md)。启动器使用 Django 开发服务并仅监听本机，独立后台 worker 会处理原有收藏任务。
+
+## 开发与验证
+
+```powershell
+.\.venv\Scripts\python.exe manage.py check --settings=local_settings
+.\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run --settings=local_settings
+.\.venv\Scripts\python.exe -m pytest bookmarks/tests research/tests -n 4
+npm.cmd run build
+.\.venv\Scripts\python.exe scripts/check-local.py
 ```
 
-Then start the Django development server with:
-```
-make serve
-```
-The frontend is now available under http://localhost:8000
+`research/` 是新增的研究资料模块。原始 `bookmarks/`、`LD_*` 配置、API 路径及数据库表名保留，以兼容已有数据和客户端。产品版本为 `bookmarks/settings/base.py` 中的 `PRODUCT_VERSION`；`version.txt` 和依赖项目元数据记录上游基线版本。
 
-### Tests
+GitHub Actions 会检查迁移、运行单元测试与浏览器回归；原上游容器发布任务仅允许在上游仓库运行。本版本未发布公开容器或线上服务。
 
-Run all tests with pytest:
-```
-make test
-```
+## 接下来的方向
 
+先用真实课题验证整理和复用流程，再考虑 DOI/arXiv 元数据、重复文献识别与 BibTeX 导出。AI 摘要和跨资料检索放到后续评估，第一版研究内容由用户手动记录。
 
-### Linting
+版本说明见 [v0.1.0](docs/releases/release-v0.1.0.md)。
 
-Run linting with ruff:
-```
-make lint
-```
+## 来源与许可证
 
-### Formatting
-
-Format Python code with ruff, Django templates with djlint, and JavaScript code with prettier:
-```
-make format
-```
-
-### DevContainers
-
-This repository also supports DevContainers: [![Open in Remote - Containers](https://img.shields.io/static/v1?label=Remote%20-%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/sissbruecker/linkding.git)
-
-Once checked out, only the following commands are required to get started:
-
-Create a user for the frontend:
-```
-uv run manage.py createsuperuser --username=joe --email=joe@example.com
-```
-Start the Node.js development server (used for compiling JavaScript components like tag auto-completion) with:
-```
-make frontend
-```
-Start the Django development server with:
-```
-make serve
-```
-The frontend is now available under http://localhost:8000
+基于 Sascha Kaspari 及贡献者开发的 linkding，基线提交 `24b5ad6cc9bde497b5d1b1e86aed5a2fb7d25c2f`。保留完整上游历史、原始 [MIT 许可证及版权声明](LICENSE.txt)，上游介绍存放在 [upstream-readme.md](docs/upstream-readme.md)。源笺的改进也使用 MIT 许可证。

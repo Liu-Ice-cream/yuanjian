@@ -26,7 +26,7 @@ class LoginViewTestCase(TestCase, BookmarkFactoryMixin, HtmlTestMixin):
         response = self.client.get("/login/")
         soup = self.make_soup(response.content.decode())
 
-        oidc_login_link = soup.find("a", string="Login with OIDC")
+        oidc_login_link = soup.find("a", string="通过 OIDC 登录")
 
         self.assertIsNone(oidc_login_link)
 
@@ -35,7 +35,7 @@ class LoginViewTestCase(TestCase, BookmarkFactoryMixin, HtmlTestMixin):
         response = self.client.get("/login/")
         soup = self.make_soup(response.content.decode())
 
-        oidc_login_link = soup.find("a", string="Login with OIDC")
+        oidc_login_link = soup.find("a", string="通过 OIDC 登录")
 
         self.assertIsNotNone(oidc_login_link)
 
@@ -49,7 +49,7 @@ class LoginViewTestCase(TestCase, BookmarkFactoryMixin, HtmlTestMixin):
         form = soup.find("form", {"action": "/login/"})
         username_input = soup.find("input", {"name": "username"})
         password_input = soup.find("input", {"name": "password"})
-        submit_button = soup.find("input", {"type": "submit", "value": "Login"})
+        submit_button = soup.find("input", {"type": "submit", "value": "登录"})
 
         self.assertIsNotNone(form)
         self.assertIsNotNone(username_input)
@@ -64,7 +64,7 @@ class LoginViewTestCase(TestCase, BookmarkFactoryMixin, HtmlTestMixin):
         form = soup.find("form", {"action": "/login/"})
         username_input = soup.find("input", {"name": "username"})
         password_input = soup.find("input", {"name": "password"})
-        submit_button = soup.find("input", {"type": "submit", "value": "Login"})
+        submit_button = soup.find("input", {"type": "submit", "value": "登录"})
 
         self.assertIsNone(form)
         self.assertIsNone(username_input)
@@ -77,7 +77,7 @@ class LoginViewTestCase(TestCase, BookmarkFactoryMixin, HtmlTestMixin):
         soup = self.make_soup(response.content.decode())
 
         form = soup.find("form", {"action": "/login/"})
-        oidc_login_link = soup.find("a", string="Login with OIDC")
+        oidc_login_link = soup.find("a", string="通过 OIDC 登录")
 
         self.assertIsNone(form)
         self.assertIsNotNone(oidc_login_link)

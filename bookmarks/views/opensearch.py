@@ -4,7 +4,7 @@ from django.urls import reverse
 
 def opensearch(request):
     base_url = request.build_absolute_uri(reverse("linkding:root"))
-    bookmarks_url = request.build_absolute_uri(reverse("linkding:bookmarks.index"))
+    bookmarks_url = request.build_absolute_uri(reverse("research:index"))
 
     return render(
         request,

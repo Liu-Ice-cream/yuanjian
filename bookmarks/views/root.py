@@ -15,4 +15,4 @@ def root(request):
             return redirect_with_query(request, reverse("linkding:bookmarks.shared"))
 
     # Otherwise redirect to the bookmarks page, retaining the query string.
-    return redirect_with_query(request, reverse("linkding:bookmarks.index"))
+    return redirect_with_query(request, reverse("research:index"))

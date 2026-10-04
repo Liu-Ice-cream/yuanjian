@@ -1,0 +1,186 @@
+import re
+
+from django import forms
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
+
+from bookmarks.models import Bookmark, build_tag_string
+from bookmarks.services.bookmarks import create_bookmark, update_bookmark
+from bookmarks.widgets import FormInput, FormSelect, FormTextarea
+
+from .models import ResearchItem, ResearchProject
+
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = ResearchProject
+        fields = ["name", "description"]
+        widgets = {"name": FormInput(), "description": FormTextarea(attrs={"rows": 4})}
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if not name:
+            raise forms.ValidationError("请填写课题名称。")
+        existing = ResearchProject.objects.filter(owner=self.user, name=name)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+        if existing.exists():
+            raise forms.ValidationError("已有同名课题，请使用不同名称。")
+        return name
+
+    def save(self, commit=True):
+        if self.instance.pk and self.instance.owner_id != self.user.pk:
+            raise PermissionDenied
+        project = super().save(commit=False)
+        project.owner = self.user
+        if commit:
+            project.save()
+        return project
+
+
+class MaterialForm(forms.ModelForm):
+    tags = forms.CharField(
+        label="标签",
+        required=False,
+        max_length=2048,
+        widget=FormInput(),
+        help_text="多个标签用空格分隔。",
+    )
+    project = forms.ModelChoiceField(
+        label="所属课题",
+        queryset=ResearchProject.objects.none(),
+        required=False,
+        empty_label="暂不归入课题",
+        widget=FormSelect(),
+    )
+    material_type = forms.ChoiceField(
+        label="资料类型", choices=ResearchItem.MaterialType.choices, widget=FormSelect()
+    )
+    reading_stage = forms.ChoiceField(
+        label="阅读阶段", choices=ResearchItem.ReadingStage.choices, widget=FormSelect()
+    )
+    question = forms.CharField(
+        label="研究问题",
+        required=False,
+        max_length=20000,
+        widget=FormTextarea(
+            attrs={"rows": 3, "placeholder": "这条资料试图解决什么问题？"}
+        ),
+    )
+    conclusion = forms.CharField(
+        label="核心结论",
+        required=False,
+        max_length=20000,
+        widget=FormTextarea(attrs={"rows": 3, "placeholder": "你确认了哪些结论？"}),
+    )
+    evidence = forms.CharField(
+        label="证据与实验",
+        required=False,
+        max_length=20000,
+        widget=FormTextarea(
+            attrs={"rows": 3, "placeholder": "记录数据、实验结果或原文位置。"}
+        ),
+    )
+    limitations = forms.CharField(
+        label="局限与注意事项",
+        required=False,
+        max_length=20000,
+        widget=FormTextarea(
+            attrs={"rows": 3, "placeholder": "哪些条件下不适用？还有哪些问题？"}
+        ),
+    )
+    relevance = forms.CharField(
+        label="与课题的关系",
+        required=False,
+        max_length=20000,
+        widget=FormTextarea(
+            attrs={"rows": 3, "placeholder": "准备在你的研究、汇报或写作中怎样使用？"}
+        ),
+    )
+    card_fields = ("question", "conclusion", "evidence", "limitations", "relevance")
+
+    class Meta:
+        model = Bookmark
+        fields = ["url", "title", "description", "notes"]
+        labels = {
+            "url": "原始链接",
+            "title": "资料标题",
+            "description": "简要介绍",
+            "notes": "补充笔记",
+        }
+        widgets = {
+            "url": FormInput(attrs={"type": "url", "autofocus": True}),
+            "title": FormInput(),
+            "description": FormTextarea(attrs={"rows": 3}),
+            "notes": FormTextarea(attrs={"rows": 5}),
+        }
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        self.duplicate_bookmark = None
+        super().__init__(*args, **kwargs)
+        self.fields["project"].queryset = ResearchProject.objects.filter(owner=user)
+        item = (
+            getattr(self.instance, "research_item", None) if self.instance.pk else None
+        )
+        self.initial.update(
+            {
+                "tags": " ".join(self.instance.tag_names) if self.instance.pk else "",
+                "material_type": ResearchItem.MaterialType.OTHER,
+                "reading_stage": ResearchItem.ReadingStage.COLLECTED
+                if not self.instance.pk or self.instance.unread
+                else ResearchItem.ReadingStage.REVIEWED,
+            }
+        )
+        if item:
+            self.initial.update(
+                {
+                    "project": item.project_id,
+                    "material_type": item.material_type,
+                    "reading_stage": item.effective_stage,
+                    **{name: getattr(item, name) for name in self.card_fields},
+                }
+            )
+
+    def clean_url(self):
+        url = self.cleaned_data["url"]
+        existing = Bookmark.query_existing(self.user, url)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+        self.duplicate_bookmark = existing.first()
+        if self.duplicate_bookmark:
+            raise forms.ValidationError(
+                "资料已存在。请打开已有资料编辑，避免覆盖研究记录。"
+            )
+        return url
+
+    @transaction.atomic
+    def save(self, commit=True):
+        if not commit:
+            raise ValueError(
+                "MaterialForm saves the bookmark and research card together."
+            )
+        if self.instance.pk and self.instance.owner_id != self.user.pk:
+            raise PermissionDenied
+        bookmark = super().save(commit=False)
+        stage = self.cleaned_data["reading_stage"]
+        bookmark.unread = stage in (
+            ResearchItem.ReadingStage.COLLECTED,
+            ResearchItem.ReadingStage.READING,
+        )
+        tags = build_tag_string(re.split(r"\s+", self.cleaned_data["tags"].strip()))
+        bookmark = (
+            update_bookmark(bookmark, tags, self.user)
+            if bookmark.pk
+            else create_bookmark(bookmark, tags, self.user)
+        )
+        item, _ = ResearchItem.objects.get_or_create(bookmark=bookmark)
+        for field in ("project", "material_type", "reading_stage", *self.card_fields):
+            setattr(item, field, self.cleaned_data[field])
+        item.full_clean()
+        item.save()
+        return bookmark

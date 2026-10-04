@@ -1,0 +1,8 @@
+{% extends 'shared/layout.html' %}
+{% block page_language %}zh-Hans{% endblock %}
+{% block content %}
+  <main class="research-workspace" id="main-content">
+    {% block research_content %}{% endblock %}
+    <footer class="research-footer">源笺 v{{ product_version }} · 把资料变成可复用的研究材料</footer>
+  </main>
+{% endblock %}

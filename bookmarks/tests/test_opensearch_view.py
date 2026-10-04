@@ -13,11 +13,11 @@ class OpenSearchViewTestCase(TestCase):
         base_url = "http://testserver"
         expected_content = f"""
             <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
-                <ShortName>Linkding</ShortName>
-                <Description>Linkding</Description>
+                <ShortName>源笺</ShortName>
+                <Description>帮助研究者把收藏的资料转化成可复用的研究材料。</Description>
                 <InputEncoding>UTF-8</InputEncoding>
-                <Image width="16" height="16" type="image/x-icon">{base_url}/static/favicon.ico</Image>
-                <Url type="text/html" template="{base_url}/bookmarks?client=opensearch&amp;q={{searchTerms}}"/>
+                <Image width="16" height="16" type="image/svg+xml">{base_url}/static/yuanjian.svg</Image>
+                <Url type="text/html" template="{base_url}/research/?client=opensearch&amp;q={{searchTerms}}"/>
             </OpenSearchDescription>
         """
         content = response.content.decode()

@@ -34,28 +34,28 @@ class A11yNavigationFocusTest(LinkdingE2ETestCase):
 
         # Subsequent navigation should move focus to main content
         self.reset_focus()
-        self.navigate_menu("Bookmarks", "Active")
+        self.navigate_menu("收藏库", "Active")
         focused = page.locator("main:focus")
         expect(focused).to_be_visible()
 
         self.reset_focus()
-        self.navigate_menu("Bookmarks", "Archived")
+        self.navigate_menu("收藏库", "Archived")
         focused = page.locator("main:focus")
         expect(focused).to_be_visible()
 
         self.reset_focus()
-        self.navigate_menu("Settings", "General")
+        self.navigate_menu("设置", "General")
         focused = page.locator("main:focus")
         expect(focused).to_be_visible()
 
         # Bookmark form views should focus the URL input
         self.reset_focus()
-        self.navigate_menu("Add bookmark")
+        self.navigate_menu("收集资料")
         focused = page.locator("input[name='url']:focus")
         expect(focused).to_be_visible()
 
         # Opening details modal should move focus to close button
-        self.navigate_menu("Bookmarks", "Active")
+        self.navigate_menu("收藏库", "Active")
         self.open_details_modal(bookmark)
         focused = page.locator(".modal button.close:focus")
         expect(focused).to_be_visible()

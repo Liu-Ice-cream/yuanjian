@@ -1,0 +1,11 @@
+{% extends 'research/base.html' %}
+{% block research_content %}
+  <a class="research-back" href="{% url 'research:index' %}">← 返回研究资料</a>
+  <section class="research-heading"><div><p class="research-eyebrow">{{ bookmark.material_label }} · {{ bookmark.stage_label }}</p><h1>{{ bookmark.resolved_title }}</h1>{% if bookmark.card.project %}<a href="{% url 'research:index' %}?project={{ bookmark.card.project.pk }}">{{ bookmark.card.project.name }}</a>{% endif %}</div><a class="btn btn-primary" href="{% url 'research:material_edit' bookmark.pk %}">编辑研究卡片</a></section>
+  <div class="research-detail-actions"><a class="btn" href="{{ bookmark.url }}" target="_blank" rel="noopener noreferrer">打开原始资料 ↗</a><a class="btn" href="{% url 'linkding:bookmarks.index' %}?details={{ bookmark.pk }}">附件与收藏详情</a>{% if bookmark.card.project %}<a class="btn" href="{% url 'research:export' %}?project={{ bookmark.card.project.pk }}" data-turbo="false">导出课题材料</a>{% endif %}</div>
+  <p class="research-source">原始链接：{{ bookmark.url }}</p>
+  {% if bookmark.description %}<section class="research-detail-section"><h2>简要介绍</h2><p>{{ bookmark.description|linebreaksbr }}</p></section>{% endif %}
+  {% for label,value in sections %}<section class="research-detail-section"><h2>{{ label }}</h2>{% if value %}<p>{{ value|linebreaksbr }}</p>{% else %}<p class="research-muted">尚未记录，可以在研究卡片中补充。</p>{% endif %}</section>{% empty %}<section class="research-detail-section"><h2>给这条资料留下研究记录</h2><p class="research-muted">已有收藏可以直接整理为研究卡片，原始链接、标签和笔记都会保留。</p><a href="{% url 'research:material_edit' bookmark.pk %}">开始整理 →</a></section>{% endfor %}
+  {% if bookmark.notes %}<section class="research-detail-section"><h2>补充笔记</h2><p>{{ bookmark.notes|linebreaksbr }}</p></section>{% endif %}
+  <div class="research-tags">{% for tag in bookmark.tags.all %}<span class="research-tag">#{{ tag.name }}</span>{% endfor %}</div>
+{% endblock %}

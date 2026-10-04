@@ -17,7 +17,8 @@ class SingleFileServiceTestCase(TestCase):
             os.remove(self.temp_html_filepath)
 
     def create_test_file(self, *args, **kwargs):
-        self.temp_html_filepath = tempfile.mkstemp(suffix=".tmp")[1]
+        descriptor, self.temp_html_filepath = tempfile.mkstemp(suffix=".tmp")
+        os.close(descriptor)
 
     def test_create_snapshot_failure(self):
         # subprocess fails - which it probably doesn't as single-file doesn't return exit codes

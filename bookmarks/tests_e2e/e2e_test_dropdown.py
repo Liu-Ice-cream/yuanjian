@@ -8,7 +8,7 @@ class DropdownE2ETestCase(LinkdingE2ETestCase):
     def locate_dropdown(self):
         # Use bookmarks dropdown as an example instance to test
         return self.page.locator("ld-dropdown").filter(
-            has=self.page.get_by_role("button", name="Bookmarks")
+            has=self.page.get_by_role("button", name="收藏库")
         )
 
     def locate_dropdown_toggle(self):

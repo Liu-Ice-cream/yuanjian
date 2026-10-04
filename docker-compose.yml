@@ -1,7 +1,11 @@
 services:
-  linkding:
-    container_name: "${LD_CONTAINER_NAME:-linkding}"
-    image: sissbruecker/linkding:latest
+  yuanjian:
+    container_name: "${LD_CONTAINER_NAME:-yuanjian}"
+    image: yuanjian:local
+    build:
+      context: .
+      dockerfile: docker/default.Dockerfile
+      target: linkding
     ports:
       - "${LD_HOST_PORT:-9090}:9090"
     volumes:

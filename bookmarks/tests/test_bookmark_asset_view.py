@@ -47,6 +47,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 200)
 
         # other user's bookmark
@@ -55,6 +56,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 404)
 
         # shared, sharing disabled
@@ -62,6 +64,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 404)
 
         # unshared, sharing enabled
@@ -72,6 +75,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 404)
 
         # shared, sharing enabled
@@ -79,6 +83,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 200)
 
     def view_access_guest_user_test(self, view_name: str):
@@ -89,6 +94,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 404)
 
         # shared, sharing disabled
@@ -96,6 +102,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 404)
 
         # unshared, sharing enabled
@@ -106,6 +113,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 404)
 
         # shared, sharing enabled
@@ -113,6 +121,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 404)
 
         # unshared, public sharing enabled
@@ -122,6 +131,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 404)
 
         # shared, public sharing enabled
@@ -129,6 +139,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset_with_file(bookmark)
 
         response = self.client.get(reverse(view_name, args=[asset.id]))
+        self.addCleanup(response.close)
         self.assertEqual(response.status_code, 200)
 
     def test_view_access(self):
@@ -147,6 +158,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         bookmark = self.setup_bookmark()
         asset = self.setup_asset_with_file(bookmark)
         response = self.client.get(reverse("linkding:assets.view", args=[asset.id]))
+        self.addCleanup(response.close)
 
         self.assertEqual(response["Content-Type"], asset.content_type)
         self.assertEqual(
@@ -162,6 +174,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         self.setup_asset_file(asset, content)
 
         response = self.client.get(reverse("linkding:assets.view", args=[asset.id]))
+        self.addCleanup(response.close)
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.streaming)
@@ -176,6 +189,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         self.setup_asset_file(asset, content)
 
         response = self.client.get(reverse("linkding:assets.view", args=[asset.id]))
+        self.addCleanup(response.close)
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.streaming)
@@ -186,6 +200,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         asset = self.setup_asset(bookmark=bookmark, file="does_not_exist.html")
 
         response = self.client.get(reverse("linkding:assets.view", args=[asset.id]))
+        self.addCleanup(response.close)
 
         self.assertEqual(response.status_code, 404)
 
@@ -197,6 +212,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         self.setup_asset_file(asset, "<p>gzipped content</p>")
 
         response = self.client.get(reverse("linkding:assets.read", args=[asset.id]))
+        self.addCleanup(response.close)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("<p>gzipped content</p>", response.content.decode())
@@ -205,6 +221,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         bookmark = self.setup_bookmark()
         asset = self.setup_asset_with_file(bookmark)
         response = self.client.get(reverse("linkding:assets.read", args=[asset.id]))
+        self.addCleanup(response.close)
 
         self.assertEqual(response["Content-Security-Policy"], "sandbox allow-scripts")
 
@@ -212,6 +229,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         bookmark = self.setup_bookmark()
         asset = self.setup_asset_with_file(bookmark)
         response = self.client.get(reverse("linkding:assets.read", args=[asset.id]))
+        self.addCleanup(response.close)
 
         soup = BeautifulSoup(response.content, "html.parser")
         link = soup.select_one("link[rel='stylesheet'][href^='data:text/css']")
@@ -228,6 +246,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         bookmark = self.setup_bookmark()
         asset = self.setup_asset_with_file(bookmark)
         response = self.client.get(reverse("linkding:assets.read", args=[asset.id]))
+        self.addCleanup(response.close)
 
         soup = BeautifulSoup(response.content, "html.parser")
         link = soup.select_one("link[rel='stylesheet'][href^='data:text/css']")
@@ -245,6 +264,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         bookmark = self.setup_bookmark()
         asset = self.setup_asset_with_file(bookmark)
         response = self.client.get(reverse("linkding:assets.read", args=[asset.id]))
+        self.addCleanup(response.close)
 
         html = response.content.decode()
         self.assertNotIn("alert('xss')", html)
@@ -254,6 +274,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         bookmark = self.setup_bookmark()
         asset = self.setup_asset_with_uploaded_file(bookmark)
         response = self.client.get(reverse("linkding:assets.view", args=[asset.id]))
+        self.addCleanup(response.close)
 
         self.assertEqual(response["Content-Type"], asset.content_type)
         self.assertEqual(
@@ -266,6 +287,7 @@ class BookmarkAssetViewTestCase(TestCase, BookmarkFactoryMixin):
         bookmark = self.setup_bookmark()
         asset = self.setup_asset_with_uploaded_file(bookmark, content_type="video/mp4")
         response = self.client.get(reverse("linkding:assets.view", args=[asset.id]))
+        self.addCleanup(response.close)
 
         self.assertEqual(response["Content-Type"], asset.content_type)
         self.assertEqual(

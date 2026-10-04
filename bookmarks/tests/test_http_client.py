@@ -6,7 +6,7 @@ import ssl
 import tempfile
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from unittest import mock
+from unittest import mock, skipIf
 
 import requests
 from cryptography import x509
@@ -171,6 +171,23 @@ class LocalServerTestCase(SimpleTestCase):
 
     def setUp(self):
         self.server.requests.clear()
+        # Real loopback tests must not route through the host process proxy.
+        proxy_env = mock.patch.dict(
+            os.environ,
+            {
+                key: ""
+                for key in (
+                    "HTTP_PROXY",
+                    "HTTPS_PROXY",
+                    "ALL_PROXY",
+                    "http_proxy",
+                    "https_proxy",
+                    "all_proxy",
+                )
+            },
+        )
+        proxy_env.start()
+        self.addCleanup(proxy_env.stop)
         # Pick up settings overridden per test
         http_client.get_allowlist.cache_clear()
         self.addCleanup(http_client.get_allowlist.cache_clear)
@@ -322,9 +339,14 @@ class GuardedRequestsTestCase(LocalServerTestCase):
         self.assertBlockedRequest(self.server.url("[::1]"), "::1")
 
     def test_blocks_alternative_loopback_notations(self):
-        self.assertBlockedRequest(self.server.url("127.1"), "127.0.0.1")
-        self.assertBlockedRequest(self.server.url("0x7f000001"), "127.0.0.1")
-        self.assertBlockedRequest(self.server.url("2130706433"), "127.0.0.1")
+        for host in ("127.1", "0x7f000001", "2130706433"):
+            # Windows DNS rejects these notations before the address guard.
+            # Supply their loopback resolution to exercise the guard on Windows.
+            if os.name == "nt":
+                with resolve(host, "127.0.0.1"):
+                    self.assertBlockedRequest(self.server.url(host), "127.0.0.1")
+            else:
+                self.assertBlockedRequest(self.server.url(host), "127.0.0.1")
         self.assertBlockedRequest(self.server.url("0.0.0.0"), "0.0.0.0")
         self.assertBlockedRequest(self.server.url("[::]"), "::")
         self.assertBlockedRequest(
@@ -377,6 +399,9 @@ class GuardedRequestsTestCase(LocalServerTestCase):
         self.assertBlockedRequest(self.server.url("[::1]"), "::1")
 
     @override_settings(LD_ALLOWED_INTERNAL_HOSTS="127.0.0.0/8")
+    @skipIf(
+        os.name == "nt", "Windows cannot connect to this IPv4-mapped IPv6 test address"
+    )
     def test_allowlisted_network_matches_ipv4_mapped_address(self):
         response = http_client.get(self.server.url("[::ffff:127.0.0.1]"), timeout=5)
         self.assertEqual(200, response.status_code)

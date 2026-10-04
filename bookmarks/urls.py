@@ -159,5 +159,7 @@ if settings.LD_ENABLE_OIDC:
 #    urlpatterns.append(path("__debug__/", include(debug_toolbar.urls)))
 
 # Context path
+urlpatterns.append(path("research/", include("research.urls")))
+
 if settings.LD_CONTEXT_PATH:
     urlpatterns = [path(settings.LD_CONTEXT_PATH, include(urlpatterns))]

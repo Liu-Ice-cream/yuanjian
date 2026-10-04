@@ -1,0 +1,43 @@
+{% extends 'research/base.html' %}
+{% block research_content %}
+  <section class="research-heading">
+    <div><p class="research-eyebrow">个人研究资料工作台</p><h1>让每一份资料，回到你的研究里。</h1><p class="research-muted">收集论文、代码与技术网页，记录自己的理解，再整理成能使用的研究材料。</p></div>
+    <a class="btn btn-primary" href="{% url 'research:material_new' %}">收集资料</a>
+  </section>
+  <section class="research-stats" aria-label="我的研究资料概况">
+    <div><strong>{{ total_count }}</strong><span>在库资料</span></div><div><strong>{{ unread_count }}</strong><span>待读资料</span></div><div><strong>{{ card_count }}</strong><span>研究卡片</span></div><div><strong>{{ project_count }}</strong><span>研究课题</span></div>
+  </section>
+  <div class="research-columns">
+    <aside class="research-sidebar">
+      <div class="research-section-heading"><h2>我的课题</h2><a href="{% url 'research:project_new' %}">新建</a></div>
+      <a class="research-project-link{% if not filter_project %} selected{% endif %}" href="{% url 'research:index' %}">全部资料</a>
+      <a class="research-project-link{% if filter_project == 'unassigned' %} selected{% endif %}" href="{% url 'research:index' %}?project=unassigned">未归入课题</a>
+      {% for project in projects %}<a class="research-project-link{% if selected_project.pk == project.pk %} selected{% endif %}" href="{% url 'research:index' %}?project={{ project.pk }}"><span>{{ project.name }}</span><small>{{ project.material_count }}</small></a>{% endfor %}
+      {% if not projects %}<p class="research-muted small">围绕正在做的课题整理资料。比如：论文综述、算法复现或技术调研。</p>{% endif %}
+      <a class="research-manage-link" href="{% url 'research:projects' %}">管理课题 →</a>
+    </aside>
+    <section class="research-main">
+      <div class="research-section-heading"><div><h2>{% if selected_project %}{{ selected_project.name }}{% elif filter_project == 'unassigned' %}未归入课题{% else %}研究资料{% endif %}</h2>{% if selected_project.description %}<p class="research-muted">{{ selected_project.description }}</p>{% endif %}</div><a class="btn" href="{{ export_url }}" data-turbo="false">导出研究材料</a></div>
+      <form class="research-filter" method="get" action="{% url 'research:index' %}">
+        <label class="research-search"><span class="text-assistive">搜索资料与研究卡片</span><input class="form-input" type="search" name="q" value="{{ filter_q }}" placeholder="搜索标题、笔记、研究问题或结论"></label>
+        <label><span class="text-assistive">课题筛选</span><select class="form-select" name="project"><option value="">全部课题</option><option value="unassigned"{% if filter_project == 'unassigned' %} selected{% endif %}>未归入课题</option>{% for project in projects %}<option value="{{ project.pk }}"{% if selected_project.pk == project.pk %} selected{% endif %}>{{ project.name }}</option>{% endfor %}</select></label>
+        <label><span class="text-assistive">资料类型筛选</span><select class="form-select" name="type"><option value="">全部类型</option><option value="unclassified"{% if filter_type == 'unclassified' %} selected{% endif %}>未分类</option>{% for value,label in material_types %}<option value="{{ value }}"{% if filter_type == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        <label><span class="text-assistive">阅读阶段筛选</span><select class="form-select" name="stage"><option value="">全部阶段</option>{% for value,label in reading_stages %}<option value="{{ value }}"{% if filter_stage == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        <button class="btn btn-primary" type="submit">筛选</button><label class="research-archive-check"><input type="checkbox" name="archived"{% if filter_archived %} checked{% endif %}>查看已归档资料</label>
+      </form>
+      <p class="research-result-count">{{ page.paginator.count }} 条资料{% if filter_q %} · 搜索“{{ filter_q }}”{% endif %}</p>
+      {% for material in page %}
+        <article class="research-material">
+          <div class="research-material-top"><span class="research-type">{{ material.material_label }}</span><span class="research-stage" data-stage="{{ material.stage }}">{{ material.stage_label }}</span></div>
+          <h3><a href="{% url 'research:material_detail' material.pk %}">{{ material.resolved_title }}</a></h3>
+          <a class="research-source" href="{{ material.url }}" target="_blank" rel="noopener noreferrer">{{ material.url|truncatechars:95 }}</a>
+          {% if material.card.conclusion %}<p class="research-excerpt"><strong>核心结论</strong> {{ material.card.conclusion|truncatechars:180 }}</p>{% elif material.description %}<p class="research-excerpt">{{ material.description|truncatechars:180 }}</p>{% else %}<p class="research-muted small">记录这条资料为什么值得保留，下次使用时更容易找到。</p>{% endif %}
+          <div class="research-material-bottom"><div>{% if material.card.project %}<span class="research-project-label">{{ material.card.project.name }}</span>{% endif %}{% for tag in material.tags.all %}<span class="research-tag">#{{ tag.name }}</span>{% endfor %}</div><a href="{% url 'research:material_edit' material.pk %}">{% if material.card %}编辑研究卡片{% else %}整理为研究卡片{% endif %} →</a></div>
+        </article>
+      {% empty %}
+        <div class="research-empty"><h3>{% if filter_q or filter_type or filter_stage or filter_project or filter_archived %}没有找到符合条件的资料{% else %}从你正在研究的问题开始{% endif %}</h3><p>{% if filter_q or filter_type or filter_stage or filter_project or filter_archived %}调整筛选条件，或者收集一条新资料。{% else %}保存第一篇论文、一个代码仓库或一篇技术文章，写下它与你课题的关系。{% endif %}</p><a class="btn btn-primary" href="{% url 'research:material_new' %}">收集资料</a><a class="btn" href="{% url 'research:index' %}">查看全部资料</a></div>
+      {% endfor %}
+      {% if page.has_other_pages %}<nav class="research-pagination" aria-label="资料分页">{% if page.has_previous %}<a class="btn" href="?{{ filter_query }}&page={{ page.previous_page_number }}">上一页</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a class="btn" href="?{{ filter_query }}&page={{ page.next_page_number }}">下一页</a>{% endif %}</nav>{% endif %}
+    </section>
+  </div>
+{% endblock %}

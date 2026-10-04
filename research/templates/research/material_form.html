@@ -1,0 +1,21 @@
+{% extends 'research/base.html' %}
+{% block research_content %}
+  <a class="research-back" href="{% url 'research:index' %}">← 返回研究资料</a>
+  <div class="research-heading"><div><p class="research-eyebrow">先保存，再慢慢理解</p><h1>{% if bookmark %}编辑研究卡片{% else %}收集一条研究资料{% endif %}</h1><p class="research-muted">原始来源和你的研究记录保存在一起。研究卡片可稍后补充。</p></div></div>
+  <form class="research-editor" method="post">
+    {% csrf_token %}{{ form.non_field_errors }}
+    {% if duplicate_bookmark %}<p class="research-notice">已有同一资料：<a href="{% url 'research:material_edit' duplicate_bookmark.pk %}">打开并编辑原有记录</a>。</p>{% endif %}
+    <section class="research-form-section"><h2>资料信息</h2>
+      <div class="form-group">{{ form.url.label_tag }}{{ form.url }}{{ form.url.errors }}</div>
+      <div class="form-group">{{ form.title.label_tag }}{{ form.title }}{{ form.title.errors }}<p class="research-muted small">可以先留空，列表会显示原始链接。</p></div>
+      <div class="research-form-grid"><div class="form-group">{{ form.material_type.label_tag }}{{ form.material_type }}{{ form.material_type.errors }}</div><div class="form-group">{{ form.reading_stage.label_tag }}{{ form.reading_stage }}{{ form.reading_stage.errors }}</div></div>
+      <div class="form-group">{{ form.project.label_tag }}{{ form.project }}{{ form.project.errors }}<p class="research-muted small">还没有课题？<a href="{% url 'research:project_new' %}" target="_blank" rel="noopener">新建一个课题</a>，保存后再回来选择。</p></div>
+      <div class="form-group">{{ form.tags.label_tag }}{{ form.tags }}{{ form.tags.errors }}<p class="research-muted small">{{ form.tags.help_text }}</p></div>
+      <div class="form-group">{{ form.description.label_tag }}{{ form.description }}{{ form.description.errors }}</div>
+    </section>
+    <section class="research-form-section"><h2>研究卡片</h2><p class="research-muted">记录你自己的理解。把结论、证据和局限分开，日后更容易复用。</p>{% for field in card_fields %}<div class="form-group">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+      <details{% if form.notes.value %} open{% endif %}><summary>补充笔记</summary><div class="form-group">{{ form.notes.label_tag }}{{ form.notes }}{{ form.notes.errors }}</div></details>
+    </section>
+    <div class="research-editor-actions"><button class="btn btn-primary" type="submit">保存研究资料</button><a class="btn" href="{% if bookmark %}{% url 'research:material_detail' bookmark.pk %}{% else %}{% url 'research:index' %}{% endif %}">取消</a></div>
+  </form>
+{% endblock %}

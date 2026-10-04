@@ -49,7 +49,7 @@ RUN wget https://www.sqlite.org/${SQLITE_RELEASE_YEAR}/sqlite-amalgamation-${SQL
 
 
 FROM python:3.13.7-slim-trixie AS linkding
-LABEL org.opencontainers.image.source="https://github.com/sissbruecker/linkding"
+LABEL org.opencontainers.image.source="https://github.com/Liu-Ice-cream/yuanjian"
 # install runtime dependencies
 RUN apt-get update && apt-get -y install media-types libpq-dev libicu-dev libssl3t64 libpcre2-8-0 curl
 WORKDIR /etc/linkding

@@ -2,10 +2,12 @@
 {% htmlmin %}
 {# Basic menu list #}
 <div class="hide-md">
-  <a href="{% url 'linkding:bookmarks.new' %}"
-     class="btn btn-primary mr-2">Add bookmark</a>
+  <a href="{% url 'research:material_new' %}"
+     class="btn btn-primary mr-2">收集资料</a>
+  <a href="{% url 'research:index' %}" class="btn btn-link">研究资料</a>
+  <a href="{% url 'research:projects' %}" class="btn btn-link">我的课题</a>
   <ld-dropdown class="dropdown">
-    <button class="btn btn-link dropdown-toggle" tabindex="0">Bookmarks</button>
+    <button class="btn btn-link dropdown-toggle" tabindex="0">收藏库</button>
     <ul class="menu" role="list" tabindex="-1">
       <li class="menu-item">
         <a href="{% url 'linkding:bookmarks.index' %}" class="menu-link">Active</a>
@@ -29,7 +31,7 @@
     </ul>
   </ld-dropdown>
   <ld-dropdown class="dropdown">
-    <button class="btn btn-link dropdown-toggle" tabindex="0">Settings</button>
+    <button class="btn btn-link dropdown-toggle" tabindex="0">设置</button>
     <ul class="menu" role="list" tabindex="-1">
       <li class="menu-item">
         <a href="{% url 'linkding:settings.general' %}" class="menu-link">General</a>
@@ -49,13 +51,13 @@
         method="post"
         data-turbo="false">
     {% csrf_token %}
-    <button type="submit" class="btn btn-link">Logout</button>
+    <button type="submit" class="btn btn-link">退出</button>
   </form>
 </div>
 {# Menu drop-down for smaller devices #}
 <div class="show-md">
-  <a href="{% url 'linkding:bookmarks.new' %}"
-     aria-label="Add bookmark"
+  <a href="{% url 'research:material_new' %}"
+     aria-label="收集资料"
      class="btn btn-primary">
     <svg width="24" height="24">
       <use href="{% static 'icons.svg' %}?v={{ app_version }}#plus"></use>
@@ -63,7 +65,7 @@
   </a>
   <ld-dropdown class="dropdown dropdown-right">
     <button class="btn btn-link dropdown-toggle"
-            aria-label="Navigation menu"
+            aria-label="导航菜单"
             tabindex="0">
       <svg width="24" height="24">
         <use href="{% static 'icons.svg' %}?v={{ app_version }}#menu"></use>
@@ -71,6 +73,8 @@
     </button>
     <!-- menu component -->
     <ul class="menu" role="list" tabindex="-1">
+      <li class="menu-item"><a href="{% url 'research:index' %}" class="menu-link">研究资料</a></li>
+      <li class="menu-item"><a href="{% url 'research:projects' %}" class="menu-link">我的课题</a></li>
       <li class="menu-item">
         <a href="{% url 'linkding:bookmarks.index' %}" class="menu-link">Bookmarks</a>
       </li>

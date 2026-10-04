@@ -1,7 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 {# Use data attributes as storage for access in static scripts #}
-<html lang="en" data-api-base-url="{% url 'linkding:api-root' %}">
+<html lang="{% block page_language %}en{% endblock %}" data-api-base-url="{% url 'linkding:api-root' %}">
   {% block head %}
     {% include 'shared/head.html' %}
   {% endblock %}
@@ -26,8 +26,8 @@
       {% endif %}
       <div class="d-flex justify-between">
         <a href="{% url 'linkding:root' %}" class="app-link d-flex align-center">
-          <img class="app-logo" src="{% static 'logo.png' %}" alt="Application logo">
-          <span class="app-name">LINKDING</span>
+          <img class="app-logo" src="{% static 'yuanjian.svg' %}" alt="{{ product_name }}标志">
+          <span class="app-name">{{ product_name }}</span>
         </a>
         <nav>
           {% if request.user.is_authenticated %}

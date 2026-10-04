@@ -1,6 +1,7 @@
 import os
 
 from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin
@@ -75,8 +76,8 @@ def background_task_view(request):
 
 
 class LinkdingAdminSite(AdminSite):
-    site_header = "linkding administration"
-    site_title = "linkding Admin"
+    site_header = settings.PRODUCT_NAME + " · 管理"
+    site_title = settings.PRODUCT_NAME + "管理后台"
 
     def get_urls(self):
         urls = super().get_urls()

@@ -1,35 +1,37 @@
 {% extends 'shared/layout.html' %}
 {% load shared %}
 {% block head %}
-  {% with page_title="Login - Linkding" %}{{ block.super }}{% endwith %}
+  {% with page_title="登录 · 源笺" %}{{ block.super }}{% endwith %}
 {% endblock %}
+{% block page_language %}zh-Hans{% endblock %}
 {% block content %}
   <main class="auth-page" aria-labelledby="main-heading">
     <div class="section-header">
-      <h1 id="main-heading">Login</h1>
+      <h1 id="main-heading">登录源笺</h1>
+      <p class="research-muted">帮助研究者把收藏的资料转化成可复用的研究材料。</p>
     </div>
     {% if not disable_login %}
       <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         {% if form.errors %}
-          <p class="form-input-hint is-error">Your username and password didn't match. Please try again.</p>
+          <p class="form-input-hint is-error">用户名或密码不正确，请重新输入。</p>
         {% endif %}
         <div class="form-group">
-          {% formlabel form.username 'Username' %}
+          {% formlabel form.username '用户名' %}
           {% formfield form.username class='form-input' %}
         </div>
         <div class="form-group">
-          {% formlabel form.password 'Password' %}
+          {% formlabel form.password '密码' %}
           {% formfield form.password class='form-input' %}
         </div>
-        <input type="submit" value="Login" class="btn btn-primary width-100 mt-4" />
+        <input type="submit" value="登录" class="btn btn-primary width-100 mt-4" />
         <input type="hidden" name="next" value="{{ next }}" />
       </form>
     {% endif %}
     {% if enable_oidc %}
       <a class="btn width-100 mt-4"
          href="{% url 'oidc_authentication_init' %}"
-         data-turbo="false">Login with OIDC</a>
+         data-turbo="false">通过 OIDC 登录</a>
     {% endif %}
   </main>
 {% endblock %}

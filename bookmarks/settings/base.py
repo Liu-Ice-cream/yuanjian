@@ -16,6 +16,9 @@ import shlex
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PRODUCT_NAME = "源笺"
+PRODUCT_VERSION = "0.1.0"
+PRODUCT_DESCRIPTION = "帮助研究者把收藏的资料转化成可复用的研究材料。"
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
@@ -40,6 +43,7 @@ USE_X_FORWARDED_HOST = os.getenv("LD_USE_X_FORWARDED_HOST", False) in (
 
 INSTALLED_APPS = [
     "bookmarks.apps.BookmarksConfig",
+    "research.apps.ResearchConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -80,6 +84,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "bookmarks.context_processors.toasts",
                 "bookmarks.context_processors.app_version",
+                "research.context_processors.product_identity",
             ],
         },
     },
@@ -111,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LD_CONTEXT_PATH = os.getenv("LD_CONTEXT_PATH", "")
 
 LOGIN_URL = "/" + LD_CONTEXT_PATH + "login"
-LOGIN_REDIRECT_URL = "/" + LD_CONTEXT_PATH + "bookmarks"
+LOGIN_REDIRECT_URL = "/" + LD_CONTEXT_PATH + "research/"
 LOGOUT_REDIRECT_URL = "/" + LD_CONTEXT_PATH + "login"
 
 CSRF_COOKIE_PATH = "/" + LD_CONTEXT_PATH

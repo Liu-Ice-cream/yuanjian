@@ -1,0 +1,6 @@
+{% extends 'research/base.html' %}
+{% block research_content %}
+  <a class="research-back" href="{% url 'research:projects' %}">← 返回我的课题</a>
+  <div class="research-heading"><div><h1>{% if project %}编辑课题{% else %}新建课题{% endif %}</h1><p class="research-muted">给资料一个明确的研究目标。</p></div></div>
+  <form method="post" class="research-project-editor">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="form-group">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}<div class="research-editor-actions"><button class="btn btn-primary" type="submit">保存课题</button><a class="btn" href="{% url 'research:projects' %}">取消</a></div></form>
+{% endblock %}
