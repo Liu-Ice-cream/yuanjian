@@ -318,6 +318,19 @@ class AllowlistTestCase(SimpleTestCase):
 
 
 class GuardedRequestsTestCase(LocalServerTestCase):
+    @mock.patch.dict(
+        os.environ,
+        {
+            "HTTP_PROXY": "http://127.0.0.1:1",
+            "HTTPS_PROXY": "http://127.0.0.1:1",
+            "ALL_PROXY": "http://127.0.0.1:1",
+        },
+    )
+    def test_explicit_direct_request_keeps_guard_with_proxy_environment(self):
+        with self.assertRaises(BlockedAddressError):
+            http_client.get(self.server.url("127.0.0.1"), trust_env=False, timeout=5)
+        self.assertEqual(self.server.requests, [])
+
     def assertBlockedRequest(self, url, expected_address=None):
         self.server.requests.clear()
         with (

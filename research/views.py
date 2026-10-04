@@ -1,17 +1,36 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.http import Http404, StreamingHttpResponse
+from django.http import Http404, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.http import require_http_methods, require_safe
+from django.views.decorators.http import (
+    require_http_methods,
+    require_POST,
+    require_safe,
+)
 
 from bookmarks.models import Bookmark
+from bookmarks.services import website_loader
 
-from .forms import MaterialForm, ProjectForm
+from .forms import MaterialForm, MetadataLookupForm, ProjectForm
 from .models import ResearchItem, ResearchProject
-from .services import decorate_material, export_markdown
+from .services import decorate_material, export_markdown, research_record_condition
+
+
+def capture_url(project=None):
+    return reverse("research:material_new") + (
+        f"?project={project.pk}" if project else ""
+    )
+
+
+def owned_project(user, project_id):
+    try:
+        project_id = int(project_id)
+    except (ValueError, TypeError):
+        raise Http404 from None
+    return get_object_or_404(ResearchProject, pk=project_id, owner=user)
 
 
 def materials_query(request):
@@ -23,13 +42,7 @@ def materials_query(request):
     if project_id == "unassigned":
         query = query.filter(research_item__project__isnull=True)
     elif project_id:
-        try:
-            project_id = int(project_id)
-        except ValueError:
-            raise Http404 from None
-        selected_project = get_object_or_404(
-            ResearchProject, pk=project_id, owner=request.user
-        )
+        selected_project = owned_project(request.user, project_id)
         query = query.filter(research_item__project=selected_project)
     material_type = request.GET.get("type", "")
     if material_type == "unclassified":
@@ -54,6 +67,13 @@ def materials_query(request):
             query = query.filter(unread=False).exclude(
                 research_item__reading_stage=ResearchItem.ReadingStage.USED
             )
+    organization = request.GET.get("organization", "")
+    if organization == "pending":
+        query = query.exclude(research_record_condition())
+    elif organization == "recorded":
+        query = query.filter(research_record_condition())
+    elif organization:
+        raise Http404
     text = request.GET.get("q", "").strip()
     if text:
         fields = (
@@ -96,6 +116,17 @@ def index(request):
     owned = Bookmark.objects.filter(owner=request.user, is_archived=False)
     params = request.GET.copy()
     params.pop("page", None)
+    organization_urls = {}
+    for value in ("", "pending", "recorded"):
+        tab_params = params.copy()
+        tab_params.pop("organization", None)
+        if value:
+            tab_params["organization"] = value
+        organization_urls[value or "all"] = reverse("research:index") + (
+            "?" + tab_params.urlencode() if tab_params else ""
+        )
+    record_count = owned.filter(research_record_condition()).count()
+    total_count = owned.count()
     context = {
         "page_title": "研究资料 · 源笺",
         "page": page,
@@ -106,14 +137,17 @@ def index(request):
         "filter_stage": request.GET.get("stage", ""),
         "filter_q": request.GET.get("q", ""),
         "filter_archived": request.GET.get("archived") == "on",
+        "filter_organization": request.GET.get("organization", ""),
+        "organization_urls": organization_urls,
+        "capture_url": capture_url(selected_project),
         "material_types": ResearchItem.MaterialType.choices,
         "reading_stages": ResearchItem.ReadingStage.choices,
         "filter_query": params.urlencode(),
         "export_url": reverse("research:export")
         + ("?" + params.urlencode() if params else ""),
-        "total_count": owned.count(),
-        "unread_count": owned.filter(unread=True).count(),
-        "card_count": owned.filter(research_item__isnull=False).count(),
+        "total_count": total_count,
+        "pending_count": total_count - record_count,
+        "record_count": record_count,
         "project_count": projects.count(),
     }
     return render(request, "research/index.html", context)
@@ -131,6 +165,10 @@ def material_edit(request, bookmark_id=None):
         "url": request.GET.get("url", request.GET.get("text", "")),
         "title": request.GET.get("title", ""),
     }
+    selected_project = None
+    if bookmark is None and request.GET.get("project") not in (None, "", "unassigned"):
+        selected_project = owned_project(request.user, request.GET["project"])
+        initial["project"] = selected_project.pk
     form = MaterialForm(
         request.user,
         request.POST if request.method == "POST" else None,
@@ -149,6 +187,7 @@ def material_edit(request, bookmark_id=None):
             "bookmark": bookmark,
             "card_fields": [form[name] for name in form.card_fields],
             "duplicate_bookmark": form.duplicate_bookmark,
+            "capture_url": capture_url(selected_project),
         },
         status=422 if request.method == "POST" else 200,
     )
@@ -187,8 +226,37 @@ def material_detail(request, bookmark_id):
             "page_title": bookmark.resolved_title + " · 源笺",
             "bookmark": bookmark,
             "sections": sections,
+            "capture_url": capture_url(item.project if item else None),
         },
     )
+
+
+@login_required
+@require_POST
+def metadata(request):
+    form = MetadataLookupForm(request.POST)
+    if not form.is_valid():
+        response = JsonResponse(
+            {"available": False, "message": str(form.errors["url"][0])}, status=400
+        )
+    else:
+        result = website_loader.load_website_metadata(
+            form.cleaned_data["url"], trust_env=False
+        )
+        title = (result.title or "").strip()[:512]
+        description = (result.description or "").strip()[:20000]
+        response = JsonResponse(
+            {
+                "available": bool(title or description),
+                "title": title,
+                "description": description,
+                "message": ""
+                if title or description
+                else "未能读取资料信息，你仍可以手动填写并保存。",
+            }
+        )
+    response["Cache-Control"] = "private, no-store"
+    return response
 
 
 @login_required
@@ -227,6 +295,7 @@ def project_edit(request, project_id=None):
             "page_title": ("编辑课题" if project else "新建课题") + " · 源笺",
             "form": form,
             "project": project,
+            "capture_url": capture_url(project),
         },
         status=422 if request.method == "POST" else 200,
     )

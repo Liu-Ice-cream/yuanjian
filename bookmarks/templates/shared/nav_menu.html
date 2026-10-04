@@ -2,7 +2,7 @@
 {% htmlmin %}
 {# Basic menu list #}
 <div class="hide-md">
-  <a href="{% url 'research:material_new' %}"
+  <a href="{{ capture_url }}"
      class="btn btn-primary mr-2">收集资料</a>
   <a href="{% url 'research:index' %}" class="btn btn-link">研究资料</a>
   <a href="{% url 'research:projects' %}" class="btn btn-link">我的课题</a>
@@ -56,7 +56,7 @@
 </div>
 {# Menu drop-down for smaller devices #}
 <div class="show-md">
-  <a href="{% url 'research:material_new' %}"
+  <a href="{{ capture_url }}"
      aria-label="收集资料"
      class="btn btn-primary">
     <svg width="24" height="24">

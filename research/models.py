@@ -78,6 +78,10 @@ class ResearchItem(models.Model):
             raise ValidationError({"project": "只能将资料归入自己的课题。"})
 
     @property
+    def has_research_record(self):
+        return bool(self.question.strip() or self.conclusion.strip())
+
+    @property
     def effective_stage(self):
         # Existing clients still update Bookmark.unread. Respect those updates
         # without changing the upstream model or adding queries to every save.

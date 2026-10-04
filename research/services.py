@@ -2,12 +2,22 @@ import html
 import re
 from urllib.parse import quote
 
+from django.db.models import Q
+
 from .models import ResearchItem
+
+
+def research_record_condition():
+    # Match the model's whitespace check, including old/imported empty cards.
+    return Q(research_item__question__regex=r"\S") | Q(
+        research_item__conclusion__regex=r"\S"
+    )
 
 
 def decorate_material(bookmark):
     item = getattr(bookmark, "research_item", None)
     bookmark.card = item
+    bookmark.has_research_record = bool(item and item.has_research_record)
     bookmark.material_label = item.get_material_type_display() if item else "未分类"
     bookmark.stage = (
         item.effective_stage

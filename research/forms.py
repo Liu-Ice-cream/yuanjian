@@ -2,6 +2,7 @@ import re
 
 from django import forms
 from django.core.exceptions import PermissionDenied
+from django.core.validators import URLValidator
 from django.db import transaction
 
 from bookmarks.models import Bookmark, build_tag_string
@@ -9,6 +10,17 @@ from bookmarks.services.bookmarks import create_bookmark, update_bookmark
 from bookmarks.widgets import FormInput, FormSelect, FormTextarea
 
 from .models import ResearchItem, ResearchProject
+
+
+class MetadataLookupForm(forms.Form):
+    url = forms.URLField(
+        max_length=2048,
+        validators=[URLValidator(schemes=["http", "https"])],
+        error_messages={
+            "required": "请先填写原始链接。",
+            "invalid": "请输入有效的 HTTP 或 HTTPS 链接。",
+        },
+    )
 
 
 class ProjectForm(forms.ModelForm):

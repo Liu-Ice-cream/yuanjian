@@ -283,10 +283,13 @@ class GuardedHTTPAdapter(HTTPAdapter):
         }
 
 
-def request(method: str, url: str, **kwargs) -> requests.Response:
+def request(
+    method: str, url: str, *, trust_env: bool = True, **kwargs
+) -> requests.Response:
     # Use a new session per request, as background tasks run in multiple
     # threads and sessions are not guaranteed to be thread-safe
     session = requests.Session()
+    session.trust_env = trust_env
     adapter = GuardedHTTPAdapter()
     session.mount("http://", adapter)
     session.mount("https://", adapter)

@@ -28,7 +28,13 @@ class WebsiteMetadata:
         }
 
 
-def load_website_metadata(url: str, ignore_cache: bool = False):
+def load_website_metadata(
+    url: str, ignore_cache: bool = False, *, trust_env: bool = True
+):
+    if not trust_env:
+        # Interactive research lookups use guarded direct connections. Keep
+        # this separate from the cache used by legacy requests through proxies.
+        return _load_website_metadata(url, trust_env=False)
     if ignore_cache:
         return _load_website_metadata(url)
     return _load_website_metadata_cached(url)
@@ -41,13 +47,17 @@ def _load_website_metadata_cached(url: str):
     return _load_website_metadata(url)
 
 
-def _load_website_metadata(url: str):
+def _load_website_metadata(url: str, *, trust_env: bool = True):
     title = None
     description = None
     preview_image = None
     try:
         start = timezone.now()
-        page_text = load_page(url)
+        page_text = (
+            load_page(url)
+            if trust_env
+            else load_page(url, trust_env=False, require_success=True)
+        )
         end = timezone.now()
         logger.debug(f"Load duration: {end - start}")
 
@@ -94,13 +104,18 @@ CHUNK_SIZE = 50 * 1024
 MAX_CONTENT_LIMIT = 5000 * 1024
 
 
-def load_page(url: str):
+def load_page(url: str, *, trust_env: bool = True, require_success: bool = False):
     headers = fake_request_headers()
     size = 0
     content = None
     iteration = 0
     # Use with to ensure request gets closed even if it's only read partially
-    with http_client.get(url, timeout=10, headers=headers, stream=True) as r:
+    connection_options = {} if trust_env else {"trust_env": False}
+    with http_client.get(
+        url, timeout=10, headers=headers, stream=True, **connection_options
+    ) as r:
+        if require_success:
+            r.raise_for_status()
         for chunk in r.iter_content(chunk_size=CHUNK_SIZE):
             size += len(chunk)
             iteration = iteration + 1
