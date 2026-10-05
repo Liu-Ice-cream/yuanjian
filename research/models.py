@@ -118,3 +118,57 @@ class ResearchExcerpt(models.Model):
 
     def __str__(self):
         return self.original_text[:80]
+
+
+class ResearchGroup(models.Model):
+    project = models.ForeignKey(
+        ResearchProject, on_delete=models.CASCADE, related_name="material_groups"
+    )
+    name = models.CharField("分组名称", max_length=120)
+    description = models.TextField("分组说明", max_length=2000, blank=True)
+    position = models.PositiveIntegerField(default=0)
+    is_archived = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["position", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "name"], name="unique_material_group_per_project"
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class ResearchPlacement(models.Model):
+    group = models.ForeignKey(
+        ResearchGroup, on_delete=models.CASCADE, related_name="placements"
+    )
+    excerpt = models.ForeignKey(
+        ResearchExcerpt, on_delete=models.CASCADE, related_name="placements"
+    )
+    position = models.PositiveIntegerField(default=0)
+    is_archived = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["position", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["group", "excerpt"], name="unique_excerpt_per_material_group"
+            )
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.group_id and self.excerpt_id:
+            item = getattr(self.excerpt.bookmark, "research_item", None)
+            if (
+                self.excerpt.bookmark.owner_id != self.group.project.owner_id
+                or not item
+                or item.project_id != self.group.project_id
+            ):
+                raise ValidationError({"excerpt": "只能编排当前课题中属于自己的摘录。"})

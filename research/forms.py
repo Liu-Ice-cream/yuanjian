@@ -9,7 +9,47 @@ from bookmarks.models import Bookmark, build_tag_string
 from bookmarks.services.bookmarks import create_bookmark, update_bookmark
 from bookmarks.widgets import FormInput, FormSelect, FormTextarea
 
-from .models import ResearchExcerpt, ResearchItem, ResearchProject
+from .models import ResearchExcerpt, ResearchGroup, ResearchItem, ResearchProject
+
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = ResearchGroup
+        fields = ["name", "description"]
+        widgets = {"name": FormInput(), "description": FormTextarea(attrs={"rows": 3})}
+        error_messages = {"name": {"required": "请填写分组名称。"}}
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if (
+            ResearchGroup.objects.filter(project=self.instance.project, name=name)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        ):
+            raise forms.ValidationError("已有同名分组；若已移除，可先恢复该分组。")
+        return name
+
+
+class OrderForm(forms.Form):
+    direction = forms.ChoiceField(choices=[("up", "上移"), ("down", "下移")])
+
+
+class PlacementMoveForm(forms.Form):
+    target = forms.ModelChoiceField(
+        label="目标分组",
+        queryset=ResearchGroup.objects.none(),
+        widget=FormSelect(),
+        error_messages={
+            "required": "请选择目标分组。",
+            "invalid_choice": "请选择当前课题中的有效分组。",
+        },
+    )
+
+    def __init__(self, group, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["target"].queryset = ResearchGroup.objects.filter(
+            project=group.project, is_archived=False
+        ).exclude(pk=group.pk)
 
 
 class ExcerptForm(forms.ModelForm):

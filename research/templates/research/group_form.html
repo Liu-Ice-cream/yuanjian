@@ -1,0 +1,5 @@
+{% extends 'research/base.html' %}
+{% block research_content %}
+  <section class="research-heading"><div><p class="research-eyebrow">{{ project.name }}</p><h1>{% if group.pk %}编辑分组{% else %}新建材料分组{% endif %}</h1><p class="research-muted">用一个主题、论点或章节组织研究摘录。</p></div><a class="btn" href="{% url 'research:outline' project.pk %}">返回材料编排</a></section>
+  <form method="post" class="research-card-form">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="form-group">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}<button class="btn btn-primary" type="submit">保存分组</button></form>
+{% endblock %}

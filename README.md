@@ -2,7 +2,7 @@
 
 **帮助研究者把收藏的资料转化成可复用的研究材料。**
 
-源笺 v0.1.2 基于 [linkding](https://github.com/sissbruecker/linkding) v1.47.0 开发。当前可在本地运行，面向个人、自托管研究资料整理。
+源笺 v0.1.3 基于 [linkding](https://github.com/sissbruecker/linkding) v1.47.0 开发。当前可在本地运行，面向个人、自托管研究资料整理。
 
 ## 当前能做什么
 
@@ -15,6 +15,8 @@
 - 填写结构化研究卡片：研究问题、核心结论、证据与实验、局限与注意事项、与课题的关系。
 - 每份资料保存多条研究摘录，分别记录原文、个人理解和来源位置；支持编辑与可恢复移除。
 - 按课题汇总、搜索摘录，并勾选当前页需要的内容导出 Markdown，包含完整摘录和原始链接。
+- 将课题摘录编排到自定义主题分组，调整分组和材料顺序、跨组移动，移除后可恢复或重新加入。
+- 按“课题 → 分组 → 摘录”导出 Markdown 提纲，保留完整原文、个人理解、来源位置和原始链接。
 - 搜索标题、标签、原笔记及研究卡片内容，并组合课题、类型、阶段筛选。
 - 将当前筛选结果完整导出为 Markdown，包含研究记录与来源链接，可继续用于汇报、写作和笔记。
 
@@ -55,7 +57,7 @@ GitHub Actions 会检查迁移、运行单元测试与浏览器回归；原上�
 
 先用真实课题验证整理和复用流程，再考虑 DOI/arXiv 元数据、重复文献识别与 BibTeX 导出。AI 摘要和跨资料检索放到后续评估，第一版研究内容由用户手动记录。
 
-版本说明见 [v0.1.2](docs/releases/release-v0.1.2.md)、[v0.1.1](docs/releases/release-v0.1.1.md) 和 [v0.1.0](docs/releases/release-v0.1.0.md)。
+版本说明见 [v0.1.3](docs/releases/release-v0.1.3.md)、[v0.1.2](docs/releases/release-v0.1.2.md)、[v0.1.1](docs/releases/release-v0.1.1.md) 和 [v0.1.0](docs/releases/release-v0.1.0.md)。
 
 ## 来源与许可证
 

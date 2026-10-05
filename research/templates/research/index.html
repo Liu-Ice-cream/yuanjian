@@ -17,7 +17,7 @@
       <a class="research-manage-link" href="{% url 'research:projects' %}">管理课题 →</a>
     </aside>
     <section class="research-main">
-      <div class="research-section-heading"><div><h2>{% if selected_project %}{{ selected_project.name }}{% elif filter_project == 'unassigned' %}未归入课题{% else %}研究资料{% endif %}</h2>{% if selected_project.description %}<p class="research-muted">{{ selected_project.description }}</p>{% endif %}</div><div class="research-detail-actions"><a class="btn" href="{% url 'research:excerpts' %}{% if filter_project %}?project={{ filter_project }}{% endif %}">汇总研究摘录</a><a class="btn" href="{{ export_url }}" data-turbo="false">导出研究材料</a></div></div>
+      <div class="research-section-heading"><div><h2>{% if selected_project %}{{ selected_project.name }}{% elif filter_project == 'unassigned' %}未归入课题{% else %}研究资料{% endif %}</h2>{% if selected_project.description %}<p class="research-muted">{{ selected_project.description }}</p>{% endif %}</div><div class="research-detail-actions">{% if selected_project %}<a class="btn" href="{% url 'research:outline' selected_project.pk %}">编排课题材料</a>{% endif %}<a class="btn" href="{% url 'research:excerpts' %}{% if filter_project %}?project={{ filter_project }}{% endif %}">汇总研究摘录</a><a class="btn" href="{{ export_url }}" data-turbo="false">导出研究材料</a></div></div>
       <nav class="research-organization-tabs" aria-label="资料整理状态">
         <a href="{{ organization_urls.all }}"{% if not filter_organization %} aria-current="page"{% endif %}>全部</a>
         <a href="{{ organization_urls.pending }}"{% if filter_organization == 'pending' %} aria-current="page"{% endif %}>待整理</a>

@@ -1,9 +1,63 @@
 from django.urls import path
 
-from . import excerpt_views, views
+from . import excerpt_views, outline_views, views
 
 app_name = "research"
 urlpatterns = [
+    path("projects/<int:project_id>/outline", outline_views.board, name="outline"),
+    path(
+        "projects/<int:project_id>/outline/export",
+        outline_views.export,
+        name="outline_export",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/new",
+        outline_views.group_edit,
+        name="group_new",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/<int:group_id>",
+        outline_views.group_detail,
+        name="group_detail",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/<int:group_id>/edit",
+        outline_views.group_edit,
+        name="group_edit",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/<int:group_id>/add",
+        outline_views.group_add,
+        name="group_add",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/<int:group_id>/archive",
+        outline_views.group_archive,
+        name="group_archive",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/<int:group_id>/order",
+        outline_views.group_order,
+        name="group_order",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/<int:group_id>/placements/<int:placement_id>/order",
+        outline_views.placement_action,
+        {"action": "order"},
+        name="placement_order",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/<int:group_id>/placements/<int:placement_id>/remove",
+        outline_views.placement_action,
+        {"action": "remove"},
+        name="placement_remove",
+    ),
+    path(
+        "projects/<int:project_id>/outline/groups/<int:group_id>/placements/<int:placement_id>/move",
+        outline_views.placement_action,
+        {"action": "move"},
+        name="placement_move",
+    ),
     path("", views.index, name="index"),
     path("materials/new", views.material_edit, name="material_new"),
     path("materials/metadata", views.metadata, name="metadata"),
