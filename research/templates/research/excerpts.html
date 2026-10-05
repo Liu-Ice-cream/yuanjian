@@ -1,0 +1,29 @@
+{% extends 'research/base.html' %}
+{% block research_content %}
+  <section class="research-heading"><div><p class="research-eyebrow">从阅读记录，到写作材料</p><h1>{% if selected_project %}{{ selected_project.name }} · 研究摘录{% else %}研究摘录{% endif %}</h1><p class="research-muted">原文、自己的理解和来源位置，一起整理与带走。</p></div><a class="btn" href="{% url 'research:index' %}{% if selected_project %}?project={{ selected_project.pk }}{% endif %}">返回课题资料</a></section>
+  <form class="research-excerpt-filter" method="get" action="{% url 'research:excerpts' %}">
+    <label><span class="text-assistive">搜索研究摘录</span><input class="form-input" type="search" name="q" value="{{ filter_q }}" placeholder="搜索原文、理解、来源位置或资料标题"></label>
+    <label><span class="text-assistive">摘录课题筛选</span><select class="form-select" name="project"><option value="">全部课题</option><option value="unassigned"{% if filter_project == 'unassigned' %} selected{% endif %}>未归入课题</option>{% for project in projects %}<option value="{{ project.pk }}"{% if selected_project.pk == project.pk %} selected{% endif %}>{{ project.name }}</option>{% endfor %}</select></label>
+    <button class="btn btn-primary" type="submit">筛选摘录</button>
+    <label class="research-archive-check"><input type="checkbox" name="include_archived"{% if include_archived %} checked{% endif %}>包含已归档资料的摘录</label>
+  </form>
+  <p class="research-result-count">{{ page.paginator.count }} 条摘录 · 勾选当前页需要的摘录后导出</p>
+  <form method="post" action="{{ export_url }}" data-turbo="false" class="research-excerpt-selection">
+    {% csrf_token %}
+    {% if selection_form.errors %}<div class="research-notice research-error" role="alert">{{ selection_form.selected.errors }}</div>{% endif %}
+    {% for excerpt in page %}
+      <article class="research-excerpt" id="excerpt-{{ excerpt.pk }}">
+        <div class="research-section-heading"><label class="research-excerpt-check"><input type="checkbox" name="selected" value="{{ excerpt.pk }}"{% if excerpt.pk|stringformat:'s' in selected_ids %} checked{% endif %}>选择摘录：{{ excerpt.original_text|truncatechars:60 }}</label><a href="{% url 'research:excerpt_edit' excerpt.bookmark_id excerpt.pk %}">编辑摘录</a></div>
+        <h2><a href="{% url 'research:material_detail' excerpt.bookmark_id %}#excerpt-{{ excerpt.pk }}">{{ excerpt.bookmark.resolved_title }}</a></h2>
+        <p class="research-excerpt-location">来源位置：{{ excerpt.locator }}{% if excerpt.bookmark.is_archived %} · 资料已归档{% endif %}</p>
+        <p class="research-source"><a href="{{ excerpt.bookmark.url }}" target="_blank" rel="noopener noreferrer">{{ excerpt.bookmark.url }}</a></p>
+        {% if excerpt.bookmark.research_item.project %}<p class="research-muted small">课题：{{ excerpt.bookmark.research_item.project.name }}</p>{% endif %}
+        <h3>原文摘录</h3><blockquote>{{ excerpt.original_text|truncatechars:1000|linebreaksbr }}</blockquote>
+        <h3>我的理解</h3><p class="research-excerpt-understanding">{% if excerpt.interpretation %}{{ excerpt.interpretation|truncatechars:1000|linebreaksbr }}{% else %}<span class="research-muted">尚未记录，可以稍后补充。</span>{% endif %}</p>
+        <a class="small" href="{% url 'research:material_detail' excerpt.bookmark_id %}#excerpt-{{ excerpt.pk }}">查看完整摘录与资料 →</a>
+      </article>
+    {% empty %}<div class="research-empty"><h2>当前范围内还没有摘录</h2><p>打开一份资料，记录原文与来源位置，再写下你的理解。</p><a class="btn btn-primary" href="{% url 'research:index' %}{% if selected_project %}?project={{ selected_project.pk }}{% endif %}">去资料中添加摘录</a></div>{% endfor %}
+    {% if page.paginator.count %}<div class="research-excerpt-export"><p class="research-muted small">导出包含完整原文、个人理解、来源位置和原始链接。换页后请重新选择。</p><button class="btn btn-primary" type="submit">导出选中摘录</button></div>{% endif %}
+  </form>
+  {% if page.has_other_pages %}<nav class="research-pagination" aria-label="摘录分页">{% if page.has_previous %}<a class="btn" href="?{{ filter_query }}&page={{ page.previous_page_number }}">上一页</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a class="btn" href="?{{ filter_query }}&page={{ page.next_page_number }}">下一页</a>{% endif %}</nav>{% endif %}
+{% endblock %}

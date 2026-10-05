@@ -6,6 +6,7 @@
      class="btn btn-primary mr-2">收集资料</a>
   <a href="{% url 'research:index' %}" class="btn btn-link">研究资料</a>
   <a href="{% url 'research:projects' %}" class="btn btn-link">我的课题</a>
+  <a href="{% url 'research:excerpts' %}" class="btn btn-link">研究摘录</a>
   <ld-dropdown class="dropdown">
     <button class="btn btn-link dropdown-toggle" tabindex="0">收藏库</button>
     <ul class="menu" role="list" tabindex="-1">
@@ -75,6 +76,7 @@
     <ul class="menu" role="list" tabindex="-1">
       <li class="menu-item"><a href="{% url 'research:index' %}" class="menu-link">研究资料</a></li>
       <li class="menu-item"><a href="{% url 'research:projects' %}" class="menu-link">我的课题</a></li>
+      <li class="menu-item"><a href="{% url 'research:excerpts' %}" class="menu-link">研究摘录</a></li>
       <li class="menu-item">
         <a href="{% url 'linkding:bookmarks.index' %}" class="menu-link">Bookmarks</a>
       </li>

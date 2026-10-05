@@ -100,3 +100,21 @@ class ResearchItem(models.Model):
     @property
     def stage_label(self):
         return self.ReadingStage(self.effective_stage).label
+
+
+class ResearchExcerpt(models.Model):
+    bookmark = models.ForeignKey(
+        Bookmark, on_delete=models.CASCADE, related_name="research_excerpts"
+    )
+    original_text = models.TextField("原文摘录", max_length=20000)
+    interpretation = models.TextField("我的理解", max_length=20000, blank=True)
+    locator = models.CharField("来源位置", max_length=240)
+    is_archived = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self):
+        return self.original_text[:80]

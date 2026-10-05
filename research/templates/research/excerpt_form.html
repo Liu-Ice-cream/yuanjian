@@ -1,0 +1,11 @@
+{% extends 'research/base.html' %}
+{% block research_content %}
+  <a class="research-back" href="{% url 'research:material_detail' bookmark.pk %}#research-excerpts">← 返回资料与摘录</a>
+  <section class="research-heading"><div><p class="research-eyebrow">留下证据，也留下自己的判断</p><h1>{% if excerpt.pk %}编辑摘录{% else %}新增研究摘录{% endif %}</h1><p class="research-muted">来自：{{ bookmark.resolved_title }}</p></div></section>
+  <p class="research-source">原始来源：<a href="{{ bookmark.url }}" target="_blank" rel="noopener noreferrer">{{ bookmark.url }}</a></p>
+  <form class="research-excerpt-editor research-form-section" method="post">
+    {% csrf_token %}{{ form.non_field_errors }}
+    {% for field in form %}<div class="form-group">{{ field.label_tag }}{{ field }}{{ field.errors }}<p class="research-muted small">{{ field.help_text }}</p></div>{% endfor %}
+    <div class="research-editor-actions"><button class="btn btn-primary" type="submit">保存摘录</button><a class="btn" href="{% url 'research:material_detail' bookmark.pk %}#research-excerpts">取消</a></div>
+  </form>
+{% endblock %}

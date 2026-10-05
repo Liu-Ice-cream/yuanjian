@@ -9,7 +9,62 @@ from bookmarks.models import Bookmark, build_tag_string
 from bookmarks.services.bookmarks import create_bookmark, update_bookmark
 from bookmarks.widgets import FormInput, FormSelect, FormTextarea
 
-from .models import ResearchItem, ResearchProject
+from .models import ResearchExcerpt, ResearchItem, ResearchProject
+
+
+class ExcerptForm(forms.ModelForm):
+    class Meta:
+        model = ResearchExcerpt
+        fields = ["original_text", "interpretation", "locator"]
+        widgets = {
+            "original_text": FormTextarea(attrs={"rows": 6}),
+            "interpretation": FormTextarea(attrs={"rows": 4}),
+            "locator": FormInput(
+                attrs={"placeholder": "例如：第 5 页、表 2、Methods 章节"}
+            ),
+        }
+        help_texts = {
+            "original_text": "粘贴原文内容，保留原意和表述。",
+            "interpretation": "记录你对这段内容的理解或准备怎样使用，可稍后补充。",
+            "locator": "填写页码、章节、图表编号或网页段落，方便回到原文核对。",
+        }
+        error_messages = {
+            "original_text": {"required": "请填写原文摘录。"},
+            "locator": {"required": "请填写来源位置，方便以后核对。"},
+        }
+
+
+class ExcerptSelectionField(forms.ModelMultipleChoiceField):
+    def _check_values(self, value):
+        # ResearchExcerpt uses a 32-bit AutoField. Validate before SQL's IN
+        # lookup, which can overflow SQLite when given an arbitrary integer.
+        for pk in value:
+            try:
+                valid = 0 < int(pk) <= 2147483647
+            except (ValueError, TypeError):
+                valid = False
+            if not valid:
+                raise forms.ValidationError(
+                    self.error_messages["invalid_pk_value"],
+                    code="invalid_pk_value",
+                    params={"pk": pk},
+                )
+        return super()._check_values(value)
+
+
+class ExcerptSelectionForm(forms.Form):
+    selected = ExcerptSelectionField(
+        queryset=ResearchExcerpt.objects.none(),
+        error_messages={
+            "required": "请先勾选需要导出的摘录。",
+            "invalid_choice": "所选摘录不在当前范围内，请重新选择。",
+            "invalid_pk_value": "所选摘录无效，请重新选择。",
+        },
+    )
+
+    def __init__(self, queryset, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["selected"].queryset = queryset
 
 
 class MetadataLookupForm(forms.Form):

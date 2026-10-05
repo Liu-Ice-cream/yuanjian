@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -15,7 +15,7 @@ from bookmarks.models import Bookmark
 from bookmarks.services import website_loader
 
 from .forms import MaterialForm, MetadataLookupForm, ProjectForm
-from .models import ResearchItem, ResearchProject
+from .models import ResearchExcerpt, ResearchItem, ResearchProject
 from .services import decorate_material, export_markdown, research_record_condition
 
 
@@ -90,6 +90,11 @@ def materials_query(request):
         condition = Q()
         for field in fields:
             condition |= Q(**{field + "__icontains": text})
+        condition |= Q(research_excerpts__is_archived=False) & (
+            Q(research_excerpts__original_text__icontains=text)
+            | Q(research_excerpts__interpretation__icontains=text)
+            | Q(research_excerpts__locator__icontains=text)
+        )
         query = query.filter(
             condition | Q(tags__name__icontains=text.lstrip("#"))
         ).distinct()
@@ -226,6 +231,12 @@ def material_detail(request, bookmark_id):
             "page_title": bookmark.resolved_title + " · 源笺",
             "bookmark": bookmark,
             "sections": sections,
+            "excerpts": ResearchExcerpt.objects.filter(
+                bookmark=bookmark, is_archived=False
+            ),
+            "removed_excerpts": ResearchExcerpt.objects.filter(
+                bookmark=bookmark, is_archived=True
+            ),
             "capture_url": capture_url(item.project if item else None),
         },
     )
@@ -305,6 +316,13 @@ def project_edit(request, project_id=None):
 @require_safe
 def export(request):
     query, project = materials_query(request)
+    query = query.prefetch_related(
+        Prefetch(
+            "research_excerpts",
+            queryset=ResearchExcerpt.objects.filter(is_archived=False),
+            to_attr="active_excerpts",
+        )
+    )
     now = timezone.localtime()
     title = project.name + " · 研究材料" if project else "研究材料清单"
     response = StreamingHttpResponse(

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import excerpt_views, views
 
 app_name = "research"
 urlpatterns = [
@@ -13,4 +13,21 @@ urlpatterns = [
     path("projects/new", views.project_edit, name="project_new"),
     path("projects/<int:project_id>/edit", views.project_edit, name="project_edit"),
     path("export", views.export, name="export"),
+    path("excerpts", excerpt_views.index, name="excerpts"),
+    path("excerpts/export", excerpt_views.export, name="excerpt_export"),
+    path(
+        "materials/<int:bookmark_id>/excerpts/new",
+        excerpt_views.edit,
+        name="excerpt_new",
+    ),
+    path(
+        "materials/<int:bookmark_id>/excerpts/<int:excerpt_id>/edit",
+        excerpt_views.edit,
+        name="excerpt_edit",
+    ),
+    path(
+        "materials/<int:bookmark_id>/excerpts/<int:excerpt_id>/archive",
+        excerpt_views.archive,
+        name="excerpt_archive",
+    ),
 ]

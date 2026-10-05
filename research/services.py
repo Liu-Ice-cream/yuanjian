@@ -66,6 +66,28 @@ def export_markdown(bookmarks, title, generated_at):
                     "\n".join("> " + markdown_text(line) for line in value.splitlines())
                     + "\n\n"
                 )
+        excerpts = getattr(bookmark, "active_excerpts", None)
+        if excerpts is None:
+            excerpts = bookmark.research_excerpts.filter(is_archived=False)
+        for excerpt in excerpts:
+            yield f"### 研究摘录 · {markdown_text(' '.join(excerpt.locator.splitlines()))}\n\n"
+            yield "原文摘录：\n\n"
+            yield (
+                "\n".join(
+                    "> " + markdown_text(line)
+                    for line in excerpt.original_text.splitlines()
+                )
+                + "\n\n"
+            )
+            yield "我的理解：\n\n"
+            yield (
+                "\n".join(
+                    "> " + markdown_text(line)
+                    for line in excerpt.interpretation.splitlines()
+                )
+                if excerpt.interpretation
+                else "尚未记录。"
+            ) + "\n\n"
         if bookmark.tag_names:
             yield (
                 "标签："
@@ -75,3 +97,32 @@ def export_markdown(bookmarks, title, generated_at):
         yield "---\n\n"
     if count == 0:
         yield "当前筛选条件下没有资料。\n"
+
+
+def export_excerpts_markdown(excerpts, title, generated_at):
+    yield f"# {markdown_text(' '.join(title.splitlines()))}\n\n源笺 · 研究摘录清单\n\n生成时间：{generated_at}\n\n"
+    for count, excerpt in enumerate(excerpts.iterator(chunk_size=200), start=1):
+        bookmark = excerpt.bookmark
+        item = getattr(bookmark, "research_item", None)
+        safe_url = quote(bookmark.url, safe=":/?=&%#@+~,;!$-_.")
+        yield f"## {count}. {markdown_text(' '.join(bookmark.resolved_title.splitlines()))}\n\n"
+        yield f"原始来源：[打开资料](<{safe_url}>)\n\n"
+        yield f"来源位置：{markdown_text(' '.join(excerpt.locator.splitlines()))}\n\n"
+        yield f"所属课题：{markdown_text(item.project.name) if item and item.project else '未归入课题'}\n\n"
+        yield "### 原文摘录\n\n"
+        yield (
+            "\n".join(
+                "> " + markdown_text(line)
+                for line in excerpt.original_text.splitlines()
+            )
+            + "\n\n"
+        )
+        yield "### 我的理解\n\n"
+        yield (
+            "\n".join(
+                "> " + markdown_text(line)
+                for line in excerpt.interpretation.splitlines()
+            )
+            if excerpt.interpretation
+            else "尚未记录。"
+        ) + "\n\n---\n\n"
