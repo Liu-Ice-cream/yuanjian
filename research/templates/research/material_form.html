@@ -13,6 +13,7 @@
         <p class="research-metadata-status small" role="status" aria-live="polite"></p>
       </yuanjian-metadata>
       <noscript><p class="research-muted small">启用 JavaScript 后可以读取资料信息；也可以直接手动填写并保存。</p></noscript>
+      {% if form.doi %}<div class="form-group">{{ form.doi.label_tag }}{{ form.doi }}{{ form.doi.errors }}<p class="research-muted small">{{ form.doi.help_text }}</p></div>{% endif %}
       <div class="form-group">{{ form.title.label_tag }}{{ form.title }}{{ form.title.errors }}<p class="research-muted small">可以先留空，列表会显示原始链接。</p></div>
       <div class="research-form-grid"><div class="form-group">{{ form.material_type.label_tag }}{{ form.material_type }}{{ form.material_type.errors }}</div><div class="form-group">{{ form.reading_stage.label_tag }}{{ form.reading_stage }}{{ form.reading_stage.errors }}</div></div>
       <div class="form-group">{{ form.project.label_tag }}{{ form.project }}{{ form.project.errors }}<p class="research-muted small">还没有课题？<a href="{% url 'research:project_new' %}" target="_blank" rel="noopener">新建一个课题</a>。可先保存资料，再编辑课题归属。</p></div>

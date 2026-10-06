@@ -1,6 +1,6 @@
 {% extends 'research/base.html' %}
 {% block research_content %}
-  <section class="research-heading"><div><p class="research-eyebrow">把证据组织成可以使用的论述</p><h1>{{ project.name }} · 材料编排</h1><p class="research-muted">按主题或论点建立分组，选择课题摘录，再调整提纲顺序。</p></div><div class="research-detail-actions"><a class="btn" href="{% url 'research:index' %}?project={{ project.pk }}">返回课题资料</a><a class="btn btn-primary" href="{% url 'research:group_new' project.pk %}">新建材料分组</a>{% if groups %}<a class="btn" href="{% url 'research:outline_export' project.pk %}" data-turbo="false">导出材料提纲</a>{% endif %}</div></section>
+  <section class="research-heading"><div><p class="research-eyebrow">把证据组织成可以使用的论述</p><h1>{{ project.name }} · 材料编排</h1><p class="research-muted">按主题或论点建立分组，选择课题摘录，再调整提纲顺序。</p></div><div class="research-detail-actions"><a class="btn" href="{% url 'research:index' %}?project={{ project.pk }}">返回课题资料</a><a class="btn btn-primary" href="{% url 'research:group_new' project.pk %}">新建材料分组</a>{% if groups %}<a class="btn" href="{% url 'research:outline_export' project.pk %}" data-turbo="false">导出材料提纲</a><a class="btn" href="{% url 'research:citations' project.pk %}?scope=outline">导出提纲引用</a>{% endif %}</div></section>
   <p class="research-notice">编排引用原摘录，编辑原文或理解后会同步更新。同一条摘录可以用于不同分组。资料换课题、归档或摘录被移除后，其内容会暂时排除。</p>
   <div class="research-outline-groups">
     {% for group in groups %}

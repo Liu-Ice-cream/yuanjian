@@ -9,7 +9,14 @@ from bookmarks.models import Bookmark, build_tag_string
 from bookmarks.services.bookmarks import create_bookmark, update_bookmark
 from bookmarks.widgets import FormInput, FormSelect, FormTextarea
 
-from .models import ResearchExcerpt, ResearchGroup, ResearchItem, ResearchProject
+from .models import (
+    ResearchExcerpt,
+    ResearchGroup,
+    ResearchItem,
+    ResearchPaper,
+    ResearchProject,
+)
+from .paper_services import normalize_doi
 
 
 class GroupForm(forms.ModelForm):
@@ -150,6 +157,13 @@ class ProjectForm(forms.ModelForm):
 
 
 class MaterialForm(forms.ModelForm):
+    doi = forms.CharField(
+        label="论文 DOI（可选）",
+        max_length=512,
+        required=False,
+        widget=FormInput(),
+        help_text="用于提醒相同论文；保存后可读取作者、年份和出版信息。",
+    )
     tags = forms.CharField(
         label="标签",
         required=False,
@@ -231,6 +245,8 @@ class MaterialForm(forms.ModelForm):
         self.duplicate_bookmark = None
         super().__init__(*args, **kwargs)
         self.fields["project"].queryset = ResearchProject.objects.filter(owner=user)
+        if self.instance.pk:
+            self.fields.pop("doi")
         item = (
             getattr(self.instance, "research_item", None) if self.instance.pk else None
         )
@@ -252,6 +268,19 @@ class MaterialForm(forms.ModelForm):
                     **{name: getattr(item, name) for name in self.card_fields},
                 }
             )
+
+    def clean_doi(self):
+        doi = normalize_doi(self.cleaned_data["doi"])
+        if doi:
+            existing = (
+                ResearchPaper.objects.filter(owner=self.user, doi=doi)
+                .select_related("bookmark")
+                .first()
+            )
+            if existing:
+                self.duplicate_bookmark = existing.bookmark
+                raise forms.ValidationError("同一 DOI 的论文已存在，请打开已有资料。")
+        return doi
 
     def clean_url(self):
         url = self.cleaned_data["url"]
@@ -290,4 +319,8 @@ class MaterialForm(forms.ModelForm):
             setattr(item, field, self.cleaned_data[field])
         item.full_clean()
         item.save()
+        if self.cleaned_data.get("doi"):
+            ResearchPaper.objects.create(
+                bookmark=bookmark, owner=self.user, doi=self.cleaned_data["doi"]
+            )
         return bookmark

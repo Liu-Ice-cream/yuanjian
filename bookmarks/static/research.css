@@ -107,3 +107,12 @@ body:has(link[href*="theme-dark.css"]:not([media])) { --research-border: #374746
 .research-removed-groups summary { cursor: pointer; margin: 18px 0; }
 #candidate-excerpts { border-top: 1px solid var(--research-border); padding-top: 24px; margin-top: 32px; scroll-margin-top: 24px; }
 @media (max-width: 700px) { .research-outline-group { padding: 16px; } .research-outline-actions { width: 100%; } .research-outline-search { flex-wrap: wrap; } }
+
+.research-paper-form { max-width: 780px; }
+.research-paper-form label { display: block; margin: 20px 0 8px; }
+.research-paper-form .errorlist { color: #b42318; }
+.research-paper-preview, .research-citation-warnings { border-left: 3px solid var(--research-accent); background: var(--research-surface); padding: 20px; margin: 20px 0; overflow-wrap: anywhere; }
+.research-paper-preview dt { font-weight: 600; margin-top: 12px; }
+.research-paper-preview dd { margin: 6px 0 14px; }
+.research-citation { margin: 20px 0; }
+.research-paper-form .form-input, .research-paper-form .form-select { max-width: 100%; }

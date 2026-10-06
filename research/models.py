@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from bookmarks.models import Bookmark
@@ -118,6 +119,67 @@ class ResearchExcerpt(models.Model):
 
     def __str__(self):
         return self.original_text[:80]
+
+
+class ResearchPaper(models.Model):
+    class EntryType(models.TextChoices):
+        ARTICLE = "article", "期刊论文"
+        CONFERENCE = "inproceedings", "会议论文"
+        MISC = "misc", "其他／预印本"
+
+    bookmark = models.OneToOneField(
+        Bookmark, on_delete=models.CASCADE, related_name="paper_info"
+    )
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    doi = models.CharField("DOI", max_length=512, blank=True)
+    title = models.CharField("论文标题", max_length=1000, blank=True)
+    authors = models.TextField("作者", max_length=20000, blank=True)
+    year = models.PositiveSmallIntegerField(
+        "出版年份",
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1000), MaxValueValidator(9999)],
+    )
+    venue = models.CharField("期刊或会议", max_length=1000, blank=True)
+    entry_type = models.CharField(
+        "引用类型", max_length=16, choices=EntryType.choices, default=EntryType.MISC
+    )
+    fetched_doi = models.CharField(max_length=512, blank=True)
+    fetched_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["bookmark_id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "doi"],
+                condition=~models.Q(doi=""),
+                name="unique_paper_doi_per_owner",
+            )
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.bookmark_id and self.owner_id != self.bookmark.owner_id:
+            raise ValidationError("论文信息必须属于资料所有者。")
+
+    @property
+    def citation_key(self):
+        return f"yuanjian{self.bookmark_id}"
+
+    @property
+    def missing_fields(self):
+        missing = []
+        for name, label in [
+            ("title", "论文标题"),
+            ("authors", "作者"),
+            ("year", "出版年份"),
+        ]:
+            if not getattr(self, name):
+                missing.append(label)
+        if self.entry_type != self.EntryType.MISC and not self.venue:
+            missing.append("期刊或会议")
+        return missing
 
 
 class ResearchGroup(models.Model):

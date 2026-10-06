@@ -17,7 +17,7 @@ import shlex
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PRODUCT_NAME = "源笺"
-PRODUCT_VERSION = "0.1.3"
+PRODUCT_VERSION = "0.1.4"
 PRODUCT_DESCRIPTION = "帮助研究者把收藏的资料转化成可复用的研究材料。"
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

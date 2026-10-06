@@ -1,0 +1,13 @@
+{% extends 'research/base.html' %}
+{% block research_content %}
+  <section class="research-heading"><div><p class="research-eyebrow">{{ bookmark.resolved_title }}</p><h1>论文信息</h1><p class="research-muted">保存作者、出版信息和 DOI，供课题引用导出使用。研究卡片和摘录独立保留。</p></div><a class="btn" href="{% url 'research:material_detail' bookmark.pk %}">返回资料</a></section>
+  <form method="post" class="research-paper-form" data-turbo="false">{% csrf_token %}{{ form.lookup_token }}{{ form.non_field_errors }}{{ form.lookup_token.errors }}
+    {% if duplicate_bookmark %}<p class="research-notice" role="alert">已有相同 DOI 的论文：<a href="{% url 'research:material_detail' duplicate_bookmark.pk %}">打开已有论文</a>。当前内容保留，请先核对。</p>{% endif %}
+    <div class="form-group">{{ form.doi.label_tag }}{{ form.doi }}{{ form.doi.errors }}<p class="research-muted small">{{ form.doi.help_text }}</p></div>
+    <button class="btn" name="action" value="lookup" type="submit" formnovalidate>读取 DOI 信息</button>
+    {% if notice %}<p class="research-notice" role="status">{{ notice }}</p>{% endif %}
+    {% if candidate %}<section class="research-paper-preview" aria-label="Crossref 候选信息"><h2>候选信息 · Crossref</h2><dl><dt>论文标题</dt><dd>{{ candidate.title }}</dd><dt>作者</dt><dd>{{ candidate.authors|default:'未提供'|linebreaksbr }}</dd><dt>出版年份</dt><dd>{{ candidate.year|default:'未提供' }}</dd><dt>期刊或会议</dt><dd>{{ candidate.venue|default:'未提供' }}</dd><dt>引用类型</dt><dd>{% if candidate.entry_type == 'article' %}期刊论文{% elif candidate.entry_type == 'inproceedings' %}会议论文{% else %}其他／预印本{% endif %}</dd></dl><p class="research-muted small">只补全下方空白字段，已有内容不会覆盖；请核对引用类型。候选信息在一小时内有效。</p><button class="btn btn-primary" name="action" value="apply" type="submit" formnovalidate>应用到空白字段</button> <button class="btn" name="action" value="discard" type="submit" formnovalidate>取消候选信息</button></section>{% elif form.lookup_token.value %}<button class="btn btn-link" name="action" value="discard" type="submit" formnovalidate>取消候选信息并手动保存</button>{% endif %}
+    {% for field in form %}{% if field.name != 'doi' and field.name != 'lookup_token' %}<div class="form-group">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<p class="research-muted small">{{ field.help_text }}</p>{% endif %}</div>{% endif %}{% endfor %}
+    <p class="research-muted small">未知信息可留空；导出前会提示缺失项，不自动编造作者、年份或刊物。</p><button class="btn btn-primary" name="action" value="save" type="submit">保存论文信息</button>
+  </form>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import IntegrityError
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -181,8 +182,16 @@ def material_edit(request, bookmark_id=None):
         initial=initial if bookmark is None else None,
     )
     if request.method == "POST" and form.is_valid():
-        saved = form.save()
-        return redirect("research:material_detail", bookmark_id=saved.pk)
+        try:
+            saved = form.save()
+            return redirect(
+                "research:paper_edit"
+                if form.cleaned_data.get("doi")
+                else "research:material_detail",
+                bookmark_id=saved.pk,
+            )
+        except IntegrityError:
+            form.add_error(None, "资料已被同时保存，请打开已有记录或重新检查 DOI。")
     return render(
         request,
         "research/material_form.html",
@@ -231,6 +240,7 @@ def material_detail(request, bookmark_id):
             "page_title": bookmark.resolved_title + " · 源笺",
             "bookmark": bookmark,
             "sections": sections,
+            "paper": getattr(bookmark, "paper_info", None),
             "excerpts": ResearchExcerpt.objects.filter(
                 bookmark=bookmark, is_archived=False
             ),

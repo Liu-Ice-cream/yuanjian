@@ -1,9 +1,18 @@
 from django.urls import path
 
-from . import excerpt_views, outline_views, views
+from . import excerpt_views, outline_views, paper_views, views
 
 app_name = "research"
 urlpatterns = [
+    path("materials/<int:bookmark_id>/paper", paper_views.edit, name="paper_edit"),
+    path(
+        "projects/<int:project_id>/citations", paper_views.citations, name="citations"
+    ),
+    path(
+        "projects/<int:project_id>/citations/export",
+        paper_views.export,
+        name="citations_export",
+    ),
     path("projects/<int:project_id>/outline", outline_views.board, name="outline"),
     path(
         "projects/<int:project_id>/outline/export",
