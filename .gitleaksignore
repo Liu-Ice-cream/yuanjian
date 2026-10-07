@@ -1,0 +1,4 @@
+# Reviewed upstream-only OIDC test examples, already public in linkding.
+# Exact historical fingerprints only; new secrets are not excluded.
+77c45c63f344025c299602235586e362ee850307:scripts/unsecure-test-setups/authelia-oidc/authelia/configuration.yml:generic-api-key:60
+77c45c63f344025c299602235586e362ee850307:scripts/unsecure-test-setups/authelia-oidc/authelia/configuration.yml:private-key:66

@@ -192,6 +192,7 @@ typings/
 /tmp
 # Database file
 /data
+/docker-data/
 # ublock + chromium
 /uBOLite.chromium.mv3
 /chromium-profile

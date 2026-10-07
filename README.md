@@ -2,7 +2,7 @@
 
 **帮助研究者把收藏的资料转化成可复用的研究材料。**
 
-源笺 v0.1.4 基于 [linkding](https://github.com/sissbruecker/linkding) v1.47.0 开发。当前可在本地运行，面向个人、自托管研究资料整理。
+源笺 v0.1.5 是面向个人研究者的早期预览版，基于 [linkding](https://github.com/sissbruecker/linkding) v1.47.0 开发。把论文、网页与代码资料整理成有来源的研究卡片、课题提纲和引用文件。
 
 ## 当前能做什么
 
@@ -30,7 +30,9 @@
 需要 Python 3.13+、Node.js 和 npm；本机已验证 Python 3.14.5、Node.js 24。首次安装在 PowerShell 执行：
 
 ```powershell
-.\scripts\setup-local.ps1
+git clone https://github.com/Liu-Ice-cream/yuanjian.git
+cd yuanjian
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-local.ps1
 .\start-local.cmd
 ```
 
@@ -38,9 +40,20 @@
 
 以后双击 `start-local.cmd` 启动，双击 `stop-local.cmd` 停止，资料仍保存在 `data/`。新版本增加迁移时先停止服务、备份整个 `data/`，再运行 setup 脚本完成升级。
 
-Docker Compose 配置已改为从本仓库构建 `yuanjian:local`，并包含新增 research 模块；本机首版验证使用 Windows 启动器，尚未验证容器构建。`docker compose up --build` 前需按 `.env.sample` 准备 `.env`。
+## Docker Compose 运行
 
-运行目录、日志、数据库及排障见 [本地运行说明](https://github.com/Liu-Ice-cream/yuanjian/blob/main/docs/installation.md)。启动器使用 Django 开发服务并仅监听本机，独立后台 worker 会处理原有收藏任务。
+安装 Docker（含 Compose v2）与 Python 3 后，在仓库目录执行：
+
+```sh
+python scripts/setup-compose.py
+docker compose up --build -d --wait
+```
+
+访问 <http://127.0.0.1:9090/research/>。账号和随机密码见本机 `.env` 中的 `LD_SUPERUSER_NAME`、`LD_SUPERUSER_PASSWORD`。初始化保留已有 `.env`，重启保留账号与资料。容器默认仅监听本机，数据保存在 `docker-data/`，与 Windows 的 `data/` 分开。
+
+镜像从本仓库构建，尚未提供预构建镜像。安装、升级、备份与部署范围见 [安装说明](docs/installation.md)。容器与 Windows 从零安装、重复初始化及数据保留由 CI 验收，版本结果见 [v0.1.5](docs/releases/release-v0.1.5.md)。
+
+Windows 排障见 [本地运行说明](https://github.com/Liu-Ice-cream/yuanjian/blob/main/docs/installation.md)。启动器使用 Django 开发服务并仅监听本机，独立后台 worker 处理原有收藏任务。
 
 ## 开发与验证
 
@@ -58,9 +71,13 @@ GitHub Actions 会检查迁移、运行单元测试与浏览器回归；原上�
 
 ## 接下来的方向
 
+当前以个人、自托管研究资料整理为主，尚未提供 PDF 内置阅读、arXiv 自动识别、卷期页码自动补全、AI 摘要或团队协作。引用导出前应核对缺失提示与论文原文。
+
+遇到问题，请提交 [问题反馈](https://github.com/Liu-Ice-cream/yuanjian/issues/new/choose)，附版本、系统和复现步骤，去掉密码、令牌及私人研究内容。参与开发见 [贡献指南](CONTRIBUTING.md)，漏洞报告见 [安全政策](SECURITY.md)。
+
 先用真实课题验证整理和复用流程，再考虑 arXiv 自动识别、PDF 阅读与更细致的引用信息。AI 摘要和跨资料检索放到后续评估，第一版研究内容由用户手动记录。
 
-版本说明见 [v0.1.4](docs/releases/release-v0.1.4.md)、[v0.1.3](docs/releases/release-v0.1.3.md)、[v0.1.2](docs/releases/release-v0.1.2.md)、[v0.1.1](docs/releases/release-v0.1.1.md) 和 [v0.1.0](docs/releases/release-v0.1.0.md)。
+版本说明见 [v0.1.5](docs/releases/release-v0.1.5.md)、[v0.1.4](docs/releases/release-v0.1.4.md)、[v0.1.3](docs/releases/release-v0.1.3.md)、[v0.1.2](docs/releases/release-v0.1.2.md)、[v0.1.1](docs/releases/release-v0.1.1.md) 和 [v0.1.0](docs/releases/release-v0.1.0.md)。
 
 ## 来源与许可证
 

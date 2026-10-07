@@ -1,0 +1,17 @@
+name: 功能建议
+description: 真实研究场景中的整理与复用需求
+title: "[建议] "
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: 研究场景与遇到的困难
+      description: 当前如何处理这些资料，在哪一步耗时或容易丢失信息？
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 希望获得什么结果
+    validations:
+      required: true
