@@ -28,6 +28,8 @@ docker compose up --build -d --wait
 
 初始化生成本机 `.env`。管理员用户名与随机密码分别为 `LD_SUPERUSER_NAME`、`LD_SUPERUSER_PASSWORD`，不要把文件发到 Issue。已有 `.env` 不会覆盖；修改该文件中的密码不会重置已建立账号，可在应用设置中改密码。
 
+若此前自行复制过 `.env.sample`，两项管理员配置可能仍为空，首次启动前需自行填写。升级旧实例时保持原数据目录与账号设置。
+
 访问 <http://127.0.0.1:9090/research/>。默认仅绑定 `127.0.0.1:9090`，数据挂载为 `docker-data/`。首次源码构建需要下载基础镜像、系统包与 Python/Node 依赖，未提供预构建镜像。
 
 ```sh
