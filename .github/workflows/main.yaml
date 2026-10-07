@@ -61,6 +61,14 @@ jobs:
         if: always()
         shell: powershell
         run: ./scripts/stop-local.ps1
+      - name: Windows startup diagnostics
+        if: failure()
+        shell: powershell
+        run: |
+          Get-ChildItem data/*.stderr.log -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Output $_.Name
+            Get-Content -LiteralPath $_.FullName -Tail 50
+          }
 
   docker_install:
     name: Docker build and persistence
