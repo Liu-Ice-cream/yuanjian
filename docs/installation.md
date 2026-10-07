@@ -50,7 +50,7 @@ docker compose up -d --wait
 
 ## 对外部署范围
 
-默认面向本机。对外部署应配置 HTTPS 反向代理，按域名设置 `HOST_NAME` 和 `LD_CSRF_TRUSTED_ORIGINS`，并明确开放 `LD_HOST_BIND`。更多继承配置见 [Options](Options.md)。Windows 开发服务器不用于公网，本版未完成公网生产运维验收。
+默认面向本机。对外部署应配置 HTTPS 反向代理，按域名设置 `HOST_NAME` 和 `LD_CSRF_TRUSTED_ORIGINS`，并明确开放 `LD_HOST_BIND`。更多继承配置见 [Options](src/content/docs/options.md)。Windows 开发服务器不用于公网，本版未完成公网生产运维验收。
 
 ## 遇到问题
 

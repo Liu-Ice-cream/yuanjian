@@ -17,8 +17,9 @@ $webProcess = $null
 $workerProcess = $null
 try {
     # Use a predictable child environment; project overrides belong in local_settings.py.
-    $webProcess = Start-Process -FilePath $pythonPath -ArgumentList @('manage.py', 'runserver', "127.0.0.1:$Port", '--noreload', '--settings=local_settings') -WorkingDirectory $projectRoot -WindowStyle Hidden -UseNewEnvironment -RedirectStandardOutput "$dataPath\web.stdout.log" -RedirectStandardError "$dataPath\web.stderr.log" -PassThru
-    $workerProcess = Start-Process -FilePath $pythonPath -ArgumentList @('scripts/local_worker.py') -WorkingDirectory $projectRoot -WindowStyle Hidden -UseNewEnvironment -RedirectStandardOutput "$dataPath\worker.stdout.log" -RedirectStandardError "$dataPath\worker.stderr.log" -PassThru
+    $systemRootArgument = '"' + $env:SystemRoot + '"'
+    $webProcess = Start-Process -FilePath $pythonPath -ArgumentList @('scripts/local_service.py', 'web', '--system-root', $systemRootArgument, '--port', $Port) -WorkingDirectory $projectRoot -WindowStyle Hidden -UseNewEnvironment -RedirectStandardOutput "$dataPath\web.stdout.log" -RedirectStandardError "$dataPath\web.stderr.log" -PassThru
+    $workerProcess = Start-Process -FilePath $pythonPath -ArgumentList @('scripts/local_service.py', 'worker', '--system-root', $systemRootArgument) -WorkingDirectory $projectRoot -WindowStyle Hidden -UseNewEnvironment -RedirectStandardOutput "$dataPath\worker.stdout.log" -RedirectStandardError "$dataPath\worker.stderr.log" -PassThru
     @{ web_pid = $webProcess.Id; worker_pid = $workerProcess.Id; web_started = $webProcess.StartTime.ToUniversalTime().ToString('o'); worker_started = $workerProcess.StartTime.ToUniversalTime().ToString('o'); port = $Port } | ConvertTo-Json | Set-Content -LiteralPath $stateFile -Encoding UTF8
     $ready = $false
     for ($attempt = 0; $attempt -lt 30; $attempt++) {
