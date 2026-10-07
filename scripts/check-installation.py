@@ -74,6 +74,10 @@ if args.container:
 login = get("/login/")
 for asset in re.findall(r'(?:src|href)="(/static/[^"?]+)', login.text):
     assert get(asset).content, f"Empty static asset: {asset}"
+if args.container:
+    expected_logo = (Path(settings.STATIC_ROOT) / "yuanjian.svg").read_bytes()
+    for _ in range(20):
+        assert get("/static/yuanjian.svg").content == expected_logo
 assert post("/login/", credentials).headers["Location"] == "/research/"
 assert "源笺 v" + settings.PRODUCT_VERSION in get("/research/").text
 user = User.objects.get(username=credentials["username"])
