@@ -23,7 +23,11 @@ private_filenames = {
     "local-access.json",
     "local-secret.txt",
 }
-for name in git("ls-files").splitlines():
+tracked_paths = set(git("ls-files").splitlines())
+historical_paths = set(git("log", "--all", "--format=", "--name-only").splitlines())
+for name in tracked_paths | historical_paths:
+    if not name:
+        continue
     parts = name.split("/")
     if parts[0] in private_directories or parts[-1] in private_filenames:
         raise SystemExit(f"Local-only file tracked: {name}")
