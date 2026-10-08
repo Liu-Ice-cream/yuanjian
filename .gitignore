@@ -193,6 +193,11 @@ typings/
 # Database file
 /data
 /docker-data/
+# Internal notes and local tooling are never part of a public checkout.
+/project-notes/
+/.tools/
+/.codex/
+/.agents/
 # ublock + chromium
 /uBOLite.chromium.mv3
 /chromium-profile

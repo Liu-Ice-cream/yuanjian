@@ -55,6 +55,8 @@ docker compose up --build -d --wait
 
 Windows 排障见 [本地运行说明](https://github.com/Liu-Ice-cream/yuanjian/blob/main/docs/installation.md)。启动器使用 Django 开发服务并仅监听本机，独立后台 worker 处理原有收藏任务。
 
+账号、研究资料与配置仅保存在自己的实例中，内部开发记录不随源码分发。详见 [数据与隐私](docs/privacy.md)。
+
 ## 开发与验证
 
 ```powershell
