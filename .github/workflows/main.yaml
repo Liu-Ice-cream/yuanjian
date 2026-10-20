@@ -76,6 +76,11 @@ jobs:
     name: Docker build and persistence
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Push-event provenance can contain the pusher's personal email.
+      BUILDX_METADATA_PROVENANCE: disabled
+      DOCKER_BUILD_SUMMARY: "false"
+      DOCKER_BUILD_RECORD_UPLOAD: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -89,6 +94,7 @@ jobs:
           file: docker/default.Dockerfile
           target: linkding
           tags: yuanjian:local
+          provenance: false
           load: true
           push: false
           cache-from: type=gha
